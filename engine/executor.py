@@ -19,6 +19,7 @@ from pathlib import Path
 
 import humanize
 from dataclasses_json import DataClassJsonMixin
+from naturebench_adapter import is_naturebench, materialize_candidate_command
 
 logger = logging.getLogger("MLEvolve")
 
@@ -58,6 +59,7 @@ class Interpreter:
             cfg: config (start_cpu_id, cpu_number, agent.search.parallel_search_num)
         """
         self.working_dir = Path(working_dir).resolve()
+        self.cfg = cfg
         assert self.working_dir.exists(), f"Working directory {self.working_dir} does not exist"
         self.timeout = timeout
         self.max_parallel_run = (
@@ -157,7 +159,7 @@ class Interpreter:
         """Clean up resources for the given process slot."""
         pass
 
-    def run(self, code: str, id, reset_session=True, working_dir: str | None = None):
+    def run(self, code: str, id, reset_session=True, working_dir: str | None = None, node=None):
         """
         Execute the provided Python command in a subprocess and return its output.
 
@@ -169,9 +171,9 @@ class Interpreter:
         Returns:
             ExecutionResult: output, exec_time, exc_type, exc_info, exc_stack.
         """
-        return self._run_subprocess(code=code, id=id, working_dir=working_dir)
+        return self._run_subprocess(code=code, id=id, working_dir=working_dir, node=node)
 
-    def _run_subprocess(self, code: str, id, working_dir: str | None = None):
+    def _run_subprocess(self, code: str, id, working_dir: str | None = None, node=None):
         """
         Execute code via subprocess (avoids CUDA fork issues).
         Aligned with multiprocessing mode for consistency.
@@ -206,18 +208,31 @@ class Interpreter:
             logger.info(f"has set process_id:{process_id} to use cpu: {cpu_set}")
             pre_code = "import os\nos.sched_setaffinity(0, {cpu_set})\n".format(cpu_set=cpu_set)
 
-            code = self.isolate_submission_path(code=code, _id=id)
-            code = self.isolate_model_path(code=code, _id=id)
-            code = pre_code + code
+            if is_naturebench(self.cfg):
+                if node is None:
+                    raise ValueError("NatureBench execution requires SearchNode lineage")
+                cmd, run_wd = materialize_candidate_command(
+                    cfg=self.cfg,
+                    code=code,
+                    candidate_id=str(id),
+                    node=node,
+                    cpu_ids=cpu_set,
+                )
+                communicate_timeout = None
+            else:
+                code = self.isolate_submission_path(code=code, _id=id)
+                code = self.isolate_model_path(code=code, _id=id)
+                code = pre_code + code
 
-            # decide runfile location and cwd
-            run_wd = Path(working_dir).resolve() if working_dir is not None else self.working_dir
-            runfile_path = run_wd / self.agent_file_name[process_id]
-            run_wd.mkdir(parents=True, exist_ok=True)
-            with open(runfile_path, "w") as f:
-                f.write(code)
+                # decide runfile location and cwd
+                run_wd = Path(working_dir).resolve() if working_dir is not None else self.working_dir
+                runfile_path = run_wd / self.agent_file_name[process_id]
+                run_wd.mkdir(parents=True, exist_ok=True)
+                with open(runfile_path, "w") as f:
+                    f.write(code)
 
-            cmd = [sys.executable, str(runfile_path)]
+                cmd = [sys.executable, str(runfile_path)]
+                communicate_timeout = self.timeout
             proc = subprocess.Popen(
                 cmd,
                 cwd=str(run_wd),
@@ -236,7 +251,7 @@ class Interpreter:
             exc_stack = []
             
             try:
-                stdout, stderr = proc.communicate(timeout=self.timeout)
+                stdout, stderr = proc.communicate(timeout=communicate_timeout)
                 exec_time = time.time() - start_time
                 
                 if proc.returncode != 0:
@@ -384,5 +399,3 @@ class Interpreter:
                 if process_id is not None:
                     self.status_map[process_id] = 0
                     self.current_parallel_run -= 1
-
-

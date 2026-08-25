@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 import json
+import os
 from pathlib import Path
 from typing import Hashable, cast
 import datetime
@@ -31,9 +32,10 @@ logger = logging.getLogger("MLEvolve")
 @dataclass
 class StageConfig:
     model: str
-    temp: float
+    temp: float | None
     base_url: str
     api_key: str
+    reasoning_effort: str | None = None
 
 @dataclass
 class DecayConfig:
@@ -123,6 +125,8 @@ class InitSolutionConfig:
 
 @dataclass
 class Config(Hashable):
+    task_mode: str
+    evaluation_backend: str
     data_dir: Path
     dataset_dir: Path
     desc_file: Path | None
@@ -171,6 +175,9 @@ def _load_cfg(
     path: Path = Path(__file__).parent / "config.yaml", use_cli_args=True
 ) -> Config:
     cfg = OmegaConf.load(path)
+    overlay = os.environ.get("MLEVOLVE_CONFIG", "").strip()
+    if overlay:
+        cfg = OmegaConf.merge(cfg, OmegaConf.load(Path(overlay).expanduser().resolve(strict=True)))
     if use_cli_args:
         cfg = OmegaConf.merge(cfg, OmegaConf.from_cli())
     return cfg
@@ -181,6 +188,10 @@ def load_cfg(path: Path = Path(__file__).parent / "config.yaml") -> Config:
 
 
 def prep_cfg(cfg: Config):
+    if cfg.task_mode not in {"mlebench", "naturebench"}:
+        raise ValueError(f"Unsupported task_mode: {cfg.task_mode}")
+    if cfg.task_mode == "naturebench" and cfg.evaluation_backend != "naturebench_bridge":
+        raise ValueError("NatureBench task mode requires evaluation_backend=naturebench_bridge")
     if cfg.data_dir is None:
         raise ValueError("`data_dir` must be provided.")
 

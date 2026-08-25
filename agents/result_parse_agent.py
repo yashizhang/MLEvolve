@@ -10,6 +10,7 @@ from utils.response import wrap_code
 from engine.validation import call_validate, _validate_submission_with_retry, validate_submission_content_quality
 from agents import data_leakage_agent
 from agents.triggers import should_check_data_leakage
+from naturebench_adapter import is_naturebench, parse_candidate_result
 
 logger = logging.getLogger("MLEvolve")
 
@@ -37,6 +38,13 @@ metric_direction_func_spec = FunctionSpec(
 
 
 def determine_metric_direction(agent) -> None:
+    if is_naturebench(agent.cfg):
+        agent.metric_maximize = True
+        agent.metric_maximize_reasoning = (
+            "Fixed by the immutable NatureBench contract: maximize aggregate_improvement."
+        )
+        logger.info("NatureBench metric direction fixed deterministically to maximize")
+        return
     logger.info("=" * 80)
     logger.info("Starting pre-determination of metric optimization direction...")
     logger.info("=" * 80)
@@ -375,6 +383,43 @@ def _save_to_global_memory(agent, node: SearchNode):
 
 
 def run(agent, node: SearchNode, exec_result: ExecutionResult) -> SearchNode:
+    if is_naturebench(agent.cfg):
+        node.absorb_exec_result(exec_result)
+        node.code_summary = node.plan or f"{node.stage} candidate"
+        try:
+            if exec_result.exc_type is not None:
+                raise RuntimeError(f"candidate execution failed: {exec_result.exc_type}")
+            payload = parse_candidate_result(node.term_out)
+            value = float(payload["metric_value"])
+            node.metric = MetricValue(value, maximize=True)
+            node.is_buggy = False
+            node.is_valid = True
+            node.analysis = str(
+                payload.get("summary")
+                or "Candidate completed and received a direct official NatureBench score."
+            )
+            node.naturebench_candidate_root = str(payload.get("candidate_root") or "")
+            node.naturebench_repository_sha256 = str(
+                payload.get("candidate_repository_sha256") or ""
+            )
+            naturebench = payload.get("naturebench", {})
+            attempt = naturebench.get("attempt") if isinstance(naturebench, dict) else None
+            node.naturebench_attempt = attempt if isinstance(attempt, int) else None
+            logger.info(
+                "[parse] node %s: PASS | direct aggregate_improvement=%s | attempt=%s",
+                node.id,
+                value,
+                node.naturebench_attempt,
+            )
+        except Exception as exc:
+            node.is_buggy = True
+            node.is_valid = False
+            node.metric = WorstMetricValue()
+            node.analysis = f"NatureBench bridge failure: {type(exc).__name__}: {exc}"
+            logger.warning("[parse] node %s: FAIL | %s", node.id, node.analysis)
+        _save_to_global_memory(agent, node)
+        return node
+
     max_retries = 3
     for retry_idx in range(max_retries):
         try:

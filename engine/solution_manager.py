@@ -3,9 +3,11 @@
 import shutil
 import logging
 from collections import defaultdict
+from pathlib import Path
 from typing import List
 
 from engine.search_node import SearchNode
+from naturebench_adapter import is_naturebench
 
 logger = logging.getLogger("MLEvolve")
 
@@ -65,6 +67,22 @@ def save_best_solution(agent, result_node, submission_file_path) -> None:
     with agent.save_node_lock:
         best_solution_dir.mkdir(exist_ok=True, parents=True)
         best_submission_dir.mkdir(exist_ok=True, parents=True)
+
+        if is_naturebench(agent.cfg):
+            source = Path(result_node.naturebench_candidate_root) / "repo"
+            destination = best_solution_dir / "repo"
+            if destination.is_symlink():
+                destination.unlink()
+            elif destination.exists():
+                shutil.rmtree(destination)
+            destination.symlink_to(source, target_is_directory=True)
+            with open(best_solution_dir / "node_id.txt", "w") as f:
+                f.write(str(result_node.id))
+            write_metric_file(
+                best_solution_dir / "metric.txt", result_node, agent.metric_maximize
+            )
+            logger.info("Preserved NatureBench best repository for node %s", result_node.id)
+            return
 
         shutil.copy(
             submission_file_path,
@@ -161,8 +179,19 @@ def save_top_candidates(agent) -> None:
                     node,
                     agent.metric_maximize,
                 )
+                if is_naturebench(agent.cfg):
+                    source = Path(node.naturebench_candidate_root) / "repo"
+                    destination = rank_dir / "repo"
+                    if destination.is_symlink():
+                        destination.unlink()
+                    elif destination.exists():
+                        shutil.rmtree(destination)
+                    destination.symlink_to(source, target_is_directory=True)
             except Exception as e:
                 logger.error(f"Failed to save top{rank} solution files for node {node.id}: {e}")
+
+            if is_naturebench(agent.cfg):
+                continue
 
             # Copy submission to the same directory
             submission_file_path = agent.cfg.workspace_dir / "submission" / f"submission_{node.id}.csv"

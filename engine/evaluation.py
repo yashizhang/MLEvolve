@@ -2,6 +2,7 @@
 
 import logging
 import time
+from naturebench_adapter import effective_elapsed_seconds
 import random
 
 from engine.search_node import SearchNode
@@ -58,7 +59,7 @@ def check_improvement(agent, cur_node: SearchNode, parent_node: SearchNode):
         cur_node.stage != "root" and
         cur_node.branch_id is not None):
 
-        time_elapsed = time.time() - agent.search_start_time
+        time_elapsed = effective_elapsed_seconds(agent.cfg, agent.search_start_time)
         time_progress = time_elapsed / agent.acfg.time_limit
 
         if not hasattr(agent, 'branch_node_count'):

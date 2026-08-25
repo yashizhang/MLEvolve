@@ -3,11 +3,16 @@
 import time
 
 import humanize
+from naturebench_adapter import is_naturebench, remaining_seconds
 
 
 def get_impl_guideline_from_agent(agent):
     """Build implementation guideline from agent config."""
-    tot_time_remaining = agent.acfg.time_limit - (time.time() - agent.start_time)
+    tot_time_remaining = (
+        remaining_seconds(agent.cfg)
+        if is_naturebench(agent.cfg)
+        else agent.acfg.time_limit - (time.time() - agent.start_time)
+    )
     exec_timeout = int(min(agent.cfg.exec.timeout, tot_time_remaining))
     return get_impl_guideline(
         tot_time_remaining=tot_time_remaining,
@@ -36,7 +41,7 @@ def get_impl_guideline(
     impl_guideline = [
         f"**Resource Budget**: Time left ≈ {_format_time(tot_time_remaining)} | Steps left = {steps_remaining} | Max execution time per run = {humanize.naturaldelta(exec_timeout)}",
         "",
-        "**Note:** Code execution MUST complete within 9 hours (hard limit) — any solution exceeding this will be invalid. Within this constraint, prioritize performance and optimization.",
+        "**Note:** Code execution MUST complete within the dynamic maximum execution time shown above; the official remaining-time clock is authoritative.",
         "🎯 **CRITICAL REQUIREMENTS** (Non-Negotiable):",
         "",
         "**1. Model Inference for ALL Predictions**",

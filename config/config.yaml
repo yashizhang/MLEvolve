@@ -1,6 +1,8 @@
 # ============================================================
 #  Data & paths
 # ============================================================
+task_mode: mlebench
+evaluation_backend: mlebench
 data_dir: null
 dataset_dir: ""  # path to mle-bench dataset root, e.g. /data/mle-bench
 desc_file: null
@@ -48,11 +50,13 @@ agent:
     temp: 1
     base_url: ""   # Gemini API endpoint
     api_key: ""    # Gemini API key
+    reasoning_effort: null
   feedback:
     model: gemini-3-pro-preview
     temp: 1
     base_url: ""   # Gemini API endpoint
     api_key: ""    # Gemini API key
+    reasoning_effort: null
 
   # --- Submission check ---
   check_data_leakage: True

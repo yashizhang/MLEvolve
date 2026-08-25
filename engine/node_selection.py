@@ -3,6 +3,7 @@
 import logging
 import random
 import time
+from naturebench_adapter import effective_elapsed_seconds
 from typing import List
 
 from engine.search_node import SearchNode
@@ -169,7 +170,7 @@ def select_with_soft_switch(agent) -> SearchNode:
         logger.info("📊 Search not started yet, using standard UCT")
         return select(agent, agent.virtual_root)
 
-    time_elapsed = time.time() - agent.search_start_time
+    time_elapsed = effective_elapsed_seconds(agent.cfg, agent.search_start_time)
     total_time = agent.acfg.time_limit
     time_progress = time_elapsed / total_time
 

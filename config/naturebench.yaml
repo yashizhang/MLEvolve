@@ -1,0 +1,92 @@
+# Frozen task-independent NatureBench-Lite profile. Only paths and the case ID
+# are supplied through environment interpolation at launch.
+task_mode: naturebench
+evaluation_backend: naturebench_bridge
+data_dir: ${oc.env:NATUREBENCH_PUBLIC_PROBLEM}
+desc_file: ${oc.env:NATUREBENCH_PUBLIC_PROBLEM}/README.md
+log_dir: ${oc.env:NATUREBENCH_MLEVOLVE_RUN_ROOT}/framework
+workspace_dir: ${oc.env:NATUREBENCH_MLEVOLVE_RUN_ROOT}/framework
+preprocess_data: false
+copy_data: false
+start_cpu_id: 0
+cpu_number: 21
+
+exec:
+  timeout: 10800
+  agent_file_name: runfile.py
+
+agent:
+  steps: 500
+  time_limit: 14400
+  initial_drafts: 3
+  seed: 42
+  data_preview: true
+  code:
+    model: gpt-5.6-luna
+    temp: null
+    base_url: http://localhost/v1
+    api_key: naturebench-relay
+    reasoning_effort: xhigh
+  feedback:
+    model: gpt-5.6-luna
+    temp: null
+    base_url: http://localhost/v1
+    api_key: naturebench-relay
+    reasoning_effort: xhigh
+  check_data_leakage: false
+  use_diff_mode: true
+  use_stepwise_generation: true
+  use_evolution: true
+  use_fusion: true
+  use_aggregation: true
+  fusion_vs_evolution_prob: 0.3
+  branch_fusion_trigger_prob: 1.0
+  max_fusion_drafts: 2
+  use_global_memory: true
+  memory_similarity_threshold: 0.7
+  memory_embedding_device: cpu
+  memory_embedding_model_path: ${oc.env:NATUREBENCH_MEMORY_MODEL_PATH}
+  search:
+    parallel_search_num: 3
+    num_gpus: 1
+    num_drafts: 5
+    num_bugs: 1
+    num_improves: 3
+    topk_max_improves: 10
+    max_debug_depth: 20
+    back_debug_depth: 3
+    debug_prob: 1
+    metric_improvement_threshold: 0.0001
+    max_improve_failure: 3
+    branch_stagnation_threshold: 3
+    topk_stagnation_threshold: 6
+    stagnation_window: 4
+    top_candidates_size: 20
+    explore_switch_start: 0.5
+    explore_switch_end: 0.7
+    min_exploration_weight: 0.2
+    topk_early_k: 5
+    topk_early_max_per_branch: 3
+    topk_late_k: 3
+    topk_late_max_per_branch: 2
+    force_backprop_late_threshold: 0.80
+    force_backprop_late_prob: 0.5
+    force_backprop_mid_threshold: 0.4
+    force_backprop_mid_modulo: 3
+    recent_best_window: 4
+    fusion_min_time_hours: 2.0
+    fusion_max_time_hours: 3.3333333333333335
+    fusion_min_successful_nodes: 2
+    fusion_min_branches: 2
+    use_stagnation_detection: true
+  decay:
+    exploration_constant: 1.414
+    lower_bound: 0.5
+    alpha: 0.01
+    phase_ratios: [0.3, 0.7]
+
+coldstart:
+  use_coldstart: false
+  task_json_path: engine/coldstart/competition_tag_classified.json
+  model_json_path: engine/coldstart/models_guidance_classified.json
+  description: ""

@@ -16,11 +16,13 @@ from utils.seed import set_global_seed
 from engine.coldstart import build_guidance_description
 from utils.logging_config import setup_logging
 import torch
+from naturebench_adapter import assert_startup_config, expired, is_naturebench
 
 
 
 def run():
     cfg = load_cfg()
+    assert_startup_config(cfg)
     if cfg.torch_hub_dir:
         torch.hub.set_dir(cfg.torch_hub_dir)
     set_global_seed(cfg.agent.seed)
@@ -40,7 +42,7 @@ def run():
     global_step = 0
 
     def cleanup():
-        if global_step == 0:
+        if global_step == 0 and not is_naturebench(cfg):
             shutil.rmtree(cfg.workspace_dir)
 
     atexit.register(cleanup)
@@ -90,6 +92,9 @@ def run():
             return agent.step(exec_callback=exec_callback, node=None, execute_immediately=False)
 
         for draft_idx in range(min(initial_draft_count, total_steps)):
+            if is_naturebench(cfg) and expired(cfg):
+                logger.info("NatureBench effective budget expired during draft generation")
+                break
             try:
                 logger.info(f"🔨 Generating draft {draft_idx + 1}/{min(initial_draft_count, total_steps)} (code only)")
                 cur_node = step_task_generate_only()
@@ -117,6 +122,7 @@ def run():
 
         executor = ThreadPoolExecutor(max_workers=max_workers)
         interrupted = False
+        budget_expired = False
         try:
             futures = set()
             for i, node in enumerate(pending_draft_nodes):
@@ -133,6 +139,15 @@ def run():
                     logger.info(f"📤 Submitted initial step_task to fill thread pool")
 
             while completed < total_steps:
+                if is_naturebench(cfg) and expired(cfg):
+                    budget_expired = True
+                    logger.info("NatureBench effective budget expired; stopping MLEvolve search")
+                    interpreter.terminate_all_subprocesses()
+                    for future in futures:
+                        future.cancel()
+                    with lock:
+                        save_run(cfg, journal)
+                    break
                 done, _ = wait(futures, return_when=FIRST_COMPLETED, timeout=1.0)
 
                 if not done:
@@ -167,7 +182,9 @@ def run():
             executor.shutdown(wait=False, cancel_futures=True) if sys.version_info >= (3, 9) else executor.shutdown(wait=False)
             raise
         finally:
-            if not interrupted:
+            if budget_expired:
+                executor.shutdown(wait=False, cancel_futures=True)
+            elif not interrupted:
                 executor.shutdown(wait=True)
     else:
         logger.info(f"✅ All steps completed in Phase 1 (total_steps={total_steps} <= initial_draft_count={initial_draft_count})")
