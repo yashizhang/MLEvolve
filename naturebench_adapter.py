@@ -150,11 +150,6 @@ def assert_startup_config(cfg: Any) -> dict[str, Any]:
         "NATUREBENCH_LUNA_SOCKET",
         "NATUREBENCH_START_REPO",
         "NATUREBENCH_PUBLIC_PROBLEM",
-        "NATUREBENCH_TRIAL_CONFIG",
-        "NATUREBENCH_CANDIDATES_ROOT",
-        "NATUREBENCH_CASE_ID",
-        "NATUREBENCH_MLEVOLVE_SOURCE_COMMIT",
-        "NATUREBENCH_MLEVOLVE_ADAPTER_COMMIT",
     )
     missing = [name for name in required_environment if not os.environ.get(name)]
     if missing:
@@ -228,33 +223,17 @@ def materialize_candidate_command(
     command = [
         sys.executable,
         "-m",
-        "naturebench_bridge.candidate",
+        "naturebench_bridge.solver_client",
         "--repo",
         str(worktree),
-        "--problem",
-        str(Path(os.environ["NATUREBENCH_PUBLIC_PROBLEM"]).resolve(strict=True)),
-        "--trial-config",
-        str(Path(os.environ["NATUREBENCH_TRIAL_CONFIG"]).resolve(strict=True)),
-        "--candidates-root",
-        str(Path(os.environ["NATUREBENCH_CANDIDATES_ROOT"]).resolve()),
-        "--framework",
-        "mlevolve",
-        "--case-id",
-        os.environ["NATUREBENCH_CASE_ID"],
         "--candidate-id",
         candidate_id,
         "--metadata",
         json.dumps(metadata, sort_keys=True),
-        "--source-commit",
-        os.environ["NATUREBENCH_MLEVOLVE_SOURCE_COMMIT"],
-        "--adapter-commit",
-        os.environ["NATUREBENCH_MLEVOLVE_ADAPTER_COMMIT"],
         "--gpus",
         str(int(cfg.agent.search.num_gpus)),
         "--candidate-timeout-seconds",
         str(int(cfg.exec.timeout)),
-        "--candidate-sandbox",
-        os.environ.get("NATUREBENCH_CANDIDATE_SANDBOX", "namespace-chroot"),
     ]
     for parent_id in parent_ids:
         command.extend(["--parent-id", parent_id])

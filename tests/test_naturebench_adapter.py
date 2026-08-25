@@ -3,7 +3,9 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +16,7 @@ from naturebench_adapter import (
     EFFORT,
     MODEL,
     adapt_prompt,
+    materialize_candidate_command,
     parse_candidate_result,
 )
 
@@ -148,6 +151,61 @@ class NatureBenchAdapterTests(unittest.TestCase):
         }
         parsed = parse_candidate_result("diagnostic\n" + json.dumps(payload) + "\n")
         self.assertEqual(parsed, payload)
+
+    def test_candidate_command_uses_only_the_narrow_solver_relay(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_tmp:
+            tmp = Path(raw_tmp)
+            starter = tmp / "starter"
+            starter.mkdir()
+            (starter / "run.py").write_text("pass\n", encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=starter, check=True)
+            subprocess.run(["git", "add", "run.py"], cwd=starter, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=NatureBench Test",
+                    "-c",
+                    "user.email=test@example.invalid",
+                    "commit",
+                    "-q",
+                    "-m",
+                    "starter",
+                ],
+                cwd=starter,
+                check=True,
+            )
+            cfg = SimpleNamespace(
+                task_mode="naturebench",
+                workspace_dir=str(tmp / "workspace"),
+                agent=SimpleNamespace(search=SimpleNamespace(num_gpus=1)),
+                exec=SimpleNamespace(timeout=300),
+            )
+            node = SimpleNamespace(
+                parent=SimpleNamespace(id="parent-1"),
+                stage="draft",
+                branch_id="branch-1",
+                step=1,
+                from_topk=False,
+            )
+            environment = {"NATUREBENCH_START_REPO": str(starter)}
+            with (
+                patch.dict(os.environ, environment, clear=False),
+                patch("naturebench_adapter.expired", return_value=False),
+            ):
+                command, worktree = materialize_candidate_command(
+                    cfg=cfg,
+                    code="print('candidate')\n",
+                    candidate_id="candidate-1",
+                    node=node,
+                    cpu_ids=set(),
+                )
+            self.assertTrue(worktree.is_dir())
+            self.assertIn("naturebench_bridge.solver_client", command)
+            self.assertNotIn("naturebench_bridge.candidate", command)
+            self.assertNotIn("--problem", command)
+            self.assertNotIn("--trial-config", command)
+            self.assertNotIn("--candidates-root", command)
 
 
 if __name__ == "__main__":
