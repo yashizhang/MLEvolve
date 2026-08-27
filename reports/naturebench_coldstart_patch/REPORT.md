@@ -9,7 +9,7 @@
   was deliberately **not** patched.
 - Original branch: `naturebench-lite-luna-xhigh`; patch branch: `feature/naturebench-scientific-coldstart`
 - Original HEAD: `e38df170f1c6e670aa2d7749206a508464be0414` (pinned base `7d8403c` is an ancestor)
-- Final HEAD: see `git log` (committed at the end of this task)
+- Patch commit: `44b0ae83792492ecbb511ee6df8a081b62895da9` (`feat(coldstart): add semantic NatureBench scientific priors`); final HEAD is that commit plus this report-hash record commit
 - Working tree before patch: clean (`diff_before.patch` is empty)
 - Overlay: `mlevolve-naturebench-coldstart-v1.1.zip`, bundle version `scientific-coldstart-v1.1`,
   SHA-256 `7da182d091a34cf136369b1474eec8ac9059afd2ad3d3112ef060c785fa78589` (verified, matches GOAL.md)
