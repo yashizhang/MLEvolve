@@ -17,7 +17,6 @@ from typing import List, Tuple, Dict, Any
 
 from llm import generate, compile_prompt_to_md
 from utils.response import extract_code, extract_text_up_to_code, wrap_code
-from engine.coldstart import is_scientific_guidance
 from agents.planner.base_planner import (
     PLANNING_ALLOWED_MODULES,
     PLANNING_JSON_FORMAT,
@@ -130,54 +129,28 @@ class StepAgent:
 
         guidelines_to_use = self.guidelines.copy()
 
-        use_coldstart = (
+        use_pretrain = (
             hasattr(agent_instance, 'use_coldstart') and
             agent_instance.use_coldstart and
             hasattr(agent_instance, 'coldstart_description') and
             agent_instance.coldstart_description != "None model"
         )
-        scientific_coldstart = (
-            use_coldstart and
-            is_scientific_guidance(agent_instance.coldstart_description)
-        )
 
-        if use_coldstart and context.stage == "draft":
-            if scientific_coldstart:
-                if self.name == "model_design":
-                    scientific_emphasis = [
-                        "**Use the matched scientific cold-start recipe as ranked hypotheses, not as an answer key.**",
-                        "Implement one coherent serious method plus its cheap baseline; do not combine every listed family in the first draft.",
-                        "Classical and train-from-scratch methods are valid primary choices. Use a checkpoint only when the recipe reports that local asset as available.",
-                    ]
-                    guidelines_to_use = scientific_emphasis + guidelines_to_use
-                elif self.name == "data_processing_and_feature_engineering":
-                    scientific_awareness = [
-                        "**Align preprocessing with the matched scientific recipe and the actual visible schemas.**",
-                        "Audit shapes, units, ordering, sparsity, masks, and split boundaries before applying the recipe.",
-                        "Do not download data/models or infer hidden task details from an identifier or paper reference.",
-                    ]
-                    guidelines_to_use = scientific_awareness + guidelines_to_use
-                elif self.name == "training_evaluation":
-                    scientific_validation = [
-                        "Use the recipe's small staged sweep, task-faithful validation, and explicit sanity checks.",
-                        "Preserve the exact output contract and keep a deterministic valid fallback.",
-                    ]
-                    guidelines_to_use = scientific_validation + guidelines_to_use
-            else:
-                if self.name == "model_design":
-                    pretrain_emphasis = [
-                        "**CRITICAL: You MUST prioritize using the recommended pretrained models provided in the Implementation guideline section below.**",
-                        "The pretrained models are STRONGLY RECOMMENDED and should be your default first choice.",
-                        "Only use custom architectures if the pretrained models are clearly unsuitable for this specific task."
-                    ]
-                    guidelines_to_use = pretrain_emphasis + guidelines_to_use
-                elif self.name == "data_processing_and_feature_engineering":
-                    pretrain_awareness = [
-                        "**IMPORTANT: Be aware that pretrained models may be used in later steps. Consider the input requirements of common pretrained models (e.g., image size, normalization, data format) when preparing the data and engineering features.**",
-                        "For image tasks, ensure data is prepared in a format compatible with standard pretrained models (e.g., PIL Image, numpy arrays, proper image sizes).",
-                        "For text tasks, ensure text data is properly tokenized and formatted for potential transformer models.",
-                    ]
-                    guidelines_to_use = pretrain_awareness + guidelines_to_use
+        if use_pretrain and context.stage == "draft":
+            if self.name == "model_design":
+                pretrain_emphasis = [
+                    "**CRITICAL: You MUST prioritize using the recommended pretrained models provided in the Implementation guideline section below.**",
+                    "The pretrained models are STRONGLY RECOMMENDED and should be your default first choice.",
+                    "Only use custom architectures if the pretrained models are clearly unsuitable for this specific task."
+                ]
+                guidelines_to_use = pretrain_emphasis + guidelines_to_use
+            elif self.name == "data_processing_and_feature_engineering":
+                pretrain_awareness = [
+                    "**IMPORTANT: Be aware that pretrained models may be used in later steps. Consider the input requirements of common pretrained models (e.g., image size, normalization, data format) when preparing the data and engineering features.**",
+                    "For image tasks, ensure data is prepared in a format compatible with standard pretrained models (e.g., PIL Image, numpy arrays, proper image sizes).",
+                    "For text tasks, ensure text data is properly tokenized and formatted for potential transformer models.",
+                ]
+                guidelines_to_use = pretrain_awareness + guidelines_to_use
 
         guidelines_text = "\n".join([f"- {g}" for g in guidelines_to_use])
 

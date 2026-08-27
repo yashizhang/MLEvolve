@@ -1,0 +1,7 @@
+?? reports/
+On branch naturebench-lite-luna-xhigh
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	reports/
+
+nothing added to commit but untracked files present (use "git add" to track)

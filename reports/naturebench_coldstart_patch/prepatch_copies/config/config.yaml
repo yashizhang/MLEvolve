@@ -154,15 +154,3 @@ coldstart:
   task_json_path: "engine/coldstart/competition_tag_classified.json"
   model_json_path: "engine/coldstart/models_guidance_classified.json"
   description: ""
-  resolver: "auto"                    # legacy exact map first, then semantic scientific recipes
-  recipe_json_path: "engine/coldstart/naturebench_recipes.json"
-  asset_manifest_path: "engine/coldstart/naturebench_assets.json"
-  prior_tier: "general"               # general | specialist | oracle
-  recipe_override: ""                 # debugging only; normal runs use semantic routing
-  strict_assets: False                 # missing local weights skip the arm by default
-  max_inventory_files: 256             # path names only; file contents are never inspected
-  selected_recipe_id: ""               # populated at runtime for provenance
-  selected_recipe_score: 0.0            # populated at runtime
-  selected_recipe_margin: 0.0           # populated at runtime
-  selected_recipe_confidence: ""       # populated at runtime
-  selected_recipe_evidence: []          # populated at runtime

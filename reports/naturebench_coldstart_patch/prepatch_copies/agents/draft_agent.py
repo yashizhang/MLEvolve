@@ -7,7 +7,6 @@ from typing import Any, Optional
 
 from llm import compile_prompt_to_md
 from engine.search_node import SearchNode
-from engine.coldstart import is_scientific_guidance
 from agents.coder import plan_and_code_query, stepwise_plan_and_code_query
 from agents.triggers import register_node
 from agents.prompts import (
@@ -125,45 +124,29 @@ def run(agent, init_solution_path: Optional[str] = None) -> SearchNode:
     prompt["Instructions"] |= prompt_leakage_prevention()
 
     if agent.use_coldstart and (agent.coldstart_description != "None model"):
-        if is_scientific_guidance(agent.coldstart_description):
-            coldstart_guideline = [
-                f"""
-                **Scientific Cold-Start Strategy**:
+        coldstart_guideline = [
+            f"""
+            **Pretrained Model Strategy**:
 
-                {agent.coldstart_description}
+            • **Option A [RECOMMENDED]**: {agent.coldstart_description}
+              → SOTA models with proven performance. Use for end-to-end fine-tuning OR as frozen feature extractors.
 
-                **How to use this prior**:
-                - Treat it as ranked starting hypotheses, not as a source-paper answer key.
-                - The first draft should implement one coherent serious arm plus its cheap auditable baseline; do not combine every listed model at once.
-                - Classical and train-from-scratch methods are first-class recommendations, not inferior fallbacks.
-                - Only use checkpoints explicitly reported as locally available. If an asset is unavailable, skip it; do not download or substitute an unlisted remote model.
-                - Visible data evidence and the exact evaluation/output contract override any generic recipe detail.
-                """
-            ]
-        else:
-            coldstart_guideline = [
-                f"""
-                **Pretrained Model Strategy**:
+            • **Option B**: Alternative pretrained models if better suited to task characteristics.
 
-                • **Option A [RECOMMENDED]**: {agent.coldstart_description}
-                  → SOTA models with proven performance. Use for end-to-end fine-tuning OR as frozen feature extractors.
+            • **Option C**: Train from scratch / non-DL methods (only when pretraining provides no advantage).
 
-                • **Option B**: Alternative pretrained models if better suited to task characteristics.
+            **CRITICAL: When using any recommended pretrained model (Option A), you MUST copy the Code template EXACTLY as provided — including model variant names, file paths, and checkpoint filenames. Only the listed weights are available locally; other variants will fail to load.**
 
-                • **Option C**: Train from scratch / non-DL methods (only when pretraining provides no advantage).
+            **Key Techniques**:
+            1. **Feature Extractor Pattern**: If dataset is small or domain mismatch exists → Freeze backbone + train only final layers (or feed to XGBoost/SVM).
 
-                **CRITICAL: When using any recommended pretrained model (Option A), you MUST copy the Code template EXACTLY as provided — including model variant names, file paths, and checkpoint filenames. Only the listed weights are available locally; other variants will fail to load.**
+            2. **Mixed Precision (MANDATORY for pretrained models)**: Use `torch.cuda.amp` (autocast + GradScaler) to save memory. DO NOT manually convert to .half().
 
-                **Key Techniques**:
-                1. **Feature Extractor Pattern**: If dataset is small or domain mismatch exists → Freeze backbone + train only final layers (or feed to XGBoost/SVM).
-
-                2. **Mixed Precision (MANDATORY for pretrained models)**: Use `torch.cuda.amp` (autocast + GradScaler) to save memory. DO NOT manually convert to .half().
-
-                3. **Avoid Timeouts**: #1 cause is slow data loading, NOT GPU model.
-                   • Use DataLoader with num_workers>=2, pin_memory=True (NOT raw for loops)
-                   • For large datasets + heavy backbones: Extract & cache features to disk (.npy/.h5)
-                """
-            ]
+            3. **Avoid Timeouts**: #1 cause is slow data loading, NOT GPU model.
+               • Use DataLoader with num_workers>=2, pin_memory=True (NOT raw for loops)
+               • For large datasets + heavy backbones: Extract & cache features to disk (.npy/.h5)
+            """
+        ]
     else:
         coldstart_guideline = [""]
 

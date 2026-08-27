@@ -1,0 +1,73 @@
+{
+  "overall_pass": true,
+  "checks": {
+    "case_id_only_does_not_route": {
+      "result": null,
+      "output": "None model",
+      "pass": true
+    },
+    "doi_only_does_not_route": {
+      "result": null,
+      "output": "None model",
+      "pass": true
+    },
+    "unrelated_returns_none_model": {
+      "output": "None model",
+      "pass": true
+    },
+    "ambiguous_returns_none_model": {
+      "output": "None model",
+      "pass": true
+    },
+    "databases_clean": {
+      "detail": {
+        "urls": {
+          "recipes_hits": [],
+          "assets_hits": []
+        },
+        "download_commands": {
+          "recipes_hits": [],
+          "assets_hits": []
+        },
+        "package_install": {
+          "recipes_hits": [],
+          "assets_hits": []
+        },
+        "case_ids": {
+          "recipes_hits": [],
+          "assets_hits": []
+        },
+        "doi": {
+          "recipes_hits": [],
+          "assets_hits": []
+        }
+      },
+      "pass": true
+    },
+    "no_source_method_names": {
+      "hits": {},
+      "pass": true,
+      "note": "word-boundary match; 'Restormer' is an explicitly allowed general-tier denoising family, not the SMLM source method"
+    },
+    "general_tier_no_specialist_linker_model": {
+      "recipe": "molecular_linker_design",
+      "delinker_in_guidance": false,
+      "pass": true
+    },
+    "scientific_prompt_no_exact_copy": {
+      "contains_copy_exactly": false,
+      "pass": true
+    },
+    "legacy_prompt_retains_exact_template_wording": {
+      "pass": true
+    },
+    "no_hidden_evaluator_or_id_routing_in_code": {
+      "hits": [],
+      "pass": true,
+      "note": "comments/docstrings stripped before scan; earlier hit was the docstring stating the boundary itself"
+    },
+    "asset_manifest_local_only": {
+      "pass": true
+    }
+  }
+}

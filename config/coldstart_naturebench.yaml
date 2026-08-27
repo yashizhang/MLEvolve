@@ -1,0 +1,11 @@
+# Merge this on top of MLEvolve's normal config for a NatureBench-style run.
+# Keep this profile fixed across tasks for a matched comparison.
+coldstart:
+  use_coldstart: true
+  resolver: semantic
+  recipe_json_path: engine/coldstart/naturebench_recipes.json
+  asset_manifest_path: engine/coldstart/naturebench_assets.json
+  prior_tier: general
+  recipe_override: ""
+  strict_assets: false
+  max_inventory_files: 256

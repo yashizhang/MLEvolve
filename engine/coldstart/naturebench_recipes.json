@@ -1,0 +1,864 @@
+{
+  "schema_version": 1,
+  "name": "scientific-ml-coldstart-v1",
+  "description": "General reusable scientific ML priors selected from visible task semantics and visible file names.",
+  "recipes": {
+    "spatial_multiomics_domain_identification": {
+      "title": "Spatial multi-omics domain identification",
+      "match": {
+        "minimum_score": 13,
+        "minimum_margin": 3,
+        "required_groups": [
+          {
+            "source": "both",
+            "any": [
+              "\\bspatial\\b",
+              "coordinates?",
+              "tissue location"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "\\brna\\b",
+              "gene expression",
+              "transcript"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "\\batac\\b",
+              "chromatin accessibility",
+              "accessibility matrix"
+            ]
+          },
+          {
+            "source": "text",
+            "any": [
+              "domain",
+              "cluster",
+              "region"
+            ]
+          }
+        ],
+        "patterns": [
+          {
+            "pattern": "spatial[ -]multi[- ]omics",
+            "weight": 14,
+            "source": "text",
+            "label": "spatial multi-omics wording"
+          },
+          {
+            "pattern": "(?:rna.*atac|atac.*rna)",
+            "weight": 8,
+            "source": "both",
+            "label": "paired RNA and ATAC"
+          },
+          {
+            "pattern": "spatial coordinates?",
+            "weight": 4,
+            "source": "both",
+            "label": "spatial coordinates"
+          },
+          {
+            "pattern": "(?:domain identification|spatial domains?)",
+            "weight": 5,
+            "source": "text",
+            "label": "spatial-domain objective"
+          },
+          {
+            "pattern": "(?:adjusted rand|\\bari\\b)",
+            "weight": 2,
+            "source": "text",
+            "label": "clustering metric"
+          },
+          {
+            "pattern": "(?:rna|gene[_ -]?expression).*(?:npy|npz|csv|h5|h5ad)$",
+            "weight": 2,
+            "source": "paths",
+            "label": "RNA-like files"
+          },
+          {
+            "pattern": "(?:atac|accessibility).*(?:npy|npz|csv|h5|h5ad)$",
+            "weight": 3,
+            "source": "paths",
+            "label": "ATAC-like files"
+          }
+        ],
+        "negative_patterns": [
+          {
+            "pattern": "single[- ]molecule localization",
+            "weight": 10,
+            "source": "text"
+          },
+          {
+            "pattern": "x[- ]?ray diffraction",
+            "weight": 10,
+            "source": "text"
+          }
+        ]
+      },
+      "problem_signature": [
+        "Aligned molecular modalities describe the same spatial observations.",
+        "The target is a spatially coherent partition; modality scale, sparsity, and neighborhood geometry dominate."
+      ],
+      "launch_sequence": [
+        "Audit shapes, sparsity, preprocessing state, and observation ordering across RNA, ATAC, and coordinates.",
+        "Build separate views: PCA/SVD for RNA; TF-IDF plus LSI for raw ATAC, or SVD for already transformed ATAC.",
+        "Normalize views separately; compare modality-only, weighted concatenation, and similarity-network fusion.",
+        "Add a spatial kNN graph and compare Gaussian-mixture, spectral, and community-detection clustering.",
+        "Only after the classical pipeline works, try a shallow graph-attention autoencoder trained from scratch."
+      ],
+      "cheap_baselines": [
+        "RNA-only PCA/SVD plus K-means or Gaussian mixture.",
+        "ATAC-only LSI/SVD plus the same clustering family.",
+        "Coordinates-only spectral clustering and equal-weight fused embeddings."
+      ],
+      "models": [
+        {
+          "name": "PCA/LSI plus spatial graph clustering",
+          "tier": "general",
+          "role": "default first serious arm",
+          "instructions": [
+            "Keep preprocessing separate until after reduction.",
+            "Treat molecular-versus-spatial weight as the main early hyperparameter."
+          ]
+        },
+        {
+          "name": "Compact graph-attention autoencoder",
+          "tier": "general",
+          "role": "nonlinear fallback trained from scratch",
+          "instructions": [
+            "Use fused molecular embeddings as node features and the spatial graph as edges.",
+            "Stay shallow until it beats the classical pipeline."
+          ]
+        }
+      ],
+      "initial_sweep": [
+        "Latent dimensions 32/64/128; spatial k 8/12/20.",
+        "Molecular/spatial weights 0.0/0.25/0.5/1.0 in a staged, not Cartesian, sweep."
+      ],
+      "sanity_checks": [
+        "Rows and observation IDs align across modalities.",
+        "No evaluator/test-only metadata enters preprocessing.",
+        "All requested domains are nonempty; report modality-only ablations."
+      ],
+      "resource_notes": [
+        "Run classical arms on CPU; use sparse matrices and reserve a V100 for the graph model."
+      ],
+      "failure_pivots": [
+        "If spatial smoothing collapses domains, reduce spatial weight or use adaptive neighborhoods.",
+        "If one modality dominates, whiten/L2-normalize embeddings before retuning fusion."
+      ]
+    },
+    "inverse_protein_folding": {
+      "title": "Inverse protein folding from backbone structure",
+      "match": {
+        "minimum_score": 13,
+        "minimum_margin": 3,
+        "required_groups": [
+          {
+            "source": "both",
+            "any": [
+              "protein",
+              "amino acid",
+              "residue"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "backbone",
+              "pdb",
+              "mmcif",
+              "protein structure",
+              "atomic coordinates?"
+            ]
+          },
+          {
+            "source": "text",
+            "any": [
+              "inverse folding",
+              "sequence design",
+              "design.*sequence",
+              "predict.*sequence"
+            ]
+          }
+        ],
+        "patterns": [
+          {
+            "pattern": "inverse[ -]protein[ -]folding",
+            "weight": 16,
+            "source": "text",
+            "label": "inverse-protein-folding objective"
+          },
+          {
+            "pattern": "inverse folding",
+            "weight": 12,
+            "source": "text",
+            "label": "inverse-folding wording"
+          },
+          {
+            "pattern": "backbone.*sequence|sequence.*backbone",
+            "weight": 8,
+            "source": "text",
+            "label": "backbone-to-sequence mapping"
+          },
+          {
+            "pattern": "(?:\\.pdb|\\.cif|\\.mmcif)$",
+            "weight": 4,
+            "source": "paths",
+            "label": "structure files"
+          },
+          {
+            "pattern": "sequence recovery|native sequence",
+            "weight": 3,
+            "source": "text",
+            "label": "sequence-design validation"
+          }
+        ],
+        "negative_patterns": [
+          {
+            "pattern": "molecular linker|fragment linker",
+            "weight": 14,
+            "source": "text"
+          },
+          {
+            "pattern": "irregular sampling",
+            "weight": 12,
+            "source": "text"
+          }
+        ]
+      },
+      "problem_signature": [
+        "Protein backbone geometry conditions one amino-acid sequence per structure or designed chain.",
+        "Chain mapping, fixed residues, missing atoms, and exact output ordering are common correctness traps."
+      ],
+      "launch_sequence": [
+        "Parse structures and chain boundaries; assert residue counts and atom masks before model calls.",
+        "Run local ProteinMPNN as the primary prior and sample several low-temperature candidates.",
+        "Use local ESM-IF1 as an independent generator/scorer when available; combine within-model ranks rather than raw likelihoods.",
+        "If neither specialist checkpoint is available, train a compact geometry-aware message-passing inverse-folding model from scratch on the provided training split using backbone atoms, residue masks, and amino-acid cross-entropy.",
+        "Filter by visible validity constraints, preserve fixed residues and exact chain ordering, and keep the best valid generated fallback."
+      ],
+      "cheap_baselines": [
+        "ProteinMPNN low-temperature generation with one candidate per structure.",
+        "Amino-acid frequency output only as a contract smoke test, never the final arm."
+      ],
+      "models": [
+        {
+          "name": "ProteinMPNN",
+          "tier": "general",
+          "asset": "proteinmpnn",
+          "asset_required": true,
+          "role": "primary specialist prior",
+          "instructions": [
+            "Use the local repository entry point and available full-backbone weights.",
+            "Batch by length and use scores only after validity checks."
+          ]
+        },
+        {
+          "name": "ESM-IF1",
+          "tier": "general",
+          "asset": "esm_if1",
+          "asset_required": true,
+          "role": "independent generator or rescoring arm",
+          "instructions": [
+            "Load only the local checkpoint.",
+            "Use rank aggregation because likelihood scales are not calibrated."
+          ]
+        },
+        {
+          "name": "Compact geometry-aware inverse-folding network",
+          "tier": "general",
+          "role": "train-from-scratch fallback when local specialist weights are absent",
+          "instructions": [
+            "Encode N/CA/C/O geometry with invariant distances, orientations, and a shallow message-passing stack.",
+            "Use residue masks and teacher-forced amino-acid cross-entropy; keep the model small enough for rapid validation."
+          ]
+        },
+        {
+          "name": "Cross-model candidate rank aggregation",
+          "tier": "general",
+          "role": "low-cost ensemble",
+          "instructions": [
+            "Deduplicate sequences and combine ranks, validity, and diversity."
+          ]
+        }
+      ],
+      "initial_sweep": [
+        "Temperatures 0.10/0.15/0.20; candidates per backbone 4, then 8 or 16 only after validation gains.",
+        "Compare ProteinMPNN, ESM-IF1, and rank aggregation before deeper tuning.",
+        "Compare available specialist priors against the compact train-from-scratch fallback before deeper tuning."
+      ],
+      "sanity_checks": [
+        "Sequence lengths, chain separators, and fixed residues match parsed structures.",
+        "No unsupported symbols, empty sequences, NaNs, or chain permutations."
+      ],
+      "resource_notes": [
+        "One V100 is enough for the primary models; cache parsed coordinates."
+      ],
+      "failure_pivots": [
+        "Missing checkpoint: skip that model and spend budget on more candidates from the available prior.",
+        "Valid but poor sequences: audit chain mapping and fixed positions before expanding sweeps."
+      ]
+    },
+    "smlm_point_cloud_clustering": {
+      "title": "Single-molecule localization point-cloud clustering",
+      "match": {
+        "minimum_score": 13,
+        "minimum_margin": 3,
+        "required_groups": [
+          {
+            "source": "text",
+            "any": [
+              "single[- ]molecule localization",
+              "localization microscopy",
+              "\\bsmlm\\b"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "point cloud",
+              "localizations?",
+              "coordinates?"
+            ]
+          },
+          {
+            "source": "text",
+            "any": [
+              "cluster",
+              "instance",
+              "group"
+            ]
+          }
+        ],
+        "patterns": [
+          {
+            "pattern": "single[- ]molecule localization",
+            "weight": 14,
+            "source": "text",
+            "label": "single-molecule localization"
+          },
+          {
+            "pattern": "point clouds?",
+            "weight": 8,
+            "source": "text",
+            "label": "point-cloud input"
+          },
+          {
+            "pattern": "spatial clustering",
+            "weight": 5,
+            "source": "text",
+            "label": "spatial clustering"
+          },
+          {
+            "pattern": "dbscan|hdbscan|optics",
+            "weight": 2,
+            "source": "text",
+            "label": "density-clustering context"
+          }
+        ],
+        "negative_patterns": [
+          {
+            "pattern": "rna|atac|chromatin accessibility",
+            "weight": 12,
+            "source": "text"
+          },
+          {
+            "pattern": "x[- ]?ray diffraction",
+            "weight": 12,
+            "source": "text"
+          }
+        ]
+      },
+      "problem_signature": [
+        "Unordered 2D/3D localization coordinates have variable density and possible noise points.",
+        "Coordinate scaling and neighborhood construction matter more than generic point-cloud pretraining."
+      ],
+      "launch_sequence": [
+        "Inspect point counts, physical units, localization uncertainty, and background/noise labels.",
+        "Normalize by a robust per-cloud physical or kNN scale without erasing density.",
+        "Run DBSCAN, HDBSCAN, and OPTICS-style baselines over a small scale-aware grid.",
+        "If supervised labels exist, train a compact EdgeConv/message-passing displacement-to-center network and recluster displaced points."
+      ],
+      "cheap_baselines": [
+        "DBSCAN with epsilon derived from kNN distances.",
+        "HDBSCAN/OPTICS and connected components on a radius graph."
+      ],
+      "models": [
+        {
+          "name": "Scale-aware density clustering",
+          "tier": "general",
+          "role": "mandatory classical baseline",
+          "instructions": [
+            "Choose parameters relative to local scale.",
+            "Track noise and tiny-cluster behavior."
+          ]
+        },
+        {
+          "name": "EdgeConv displacement network",
+          "tier": "general",
+          "role": "supervised refinement trained from scratch",
+          "instructions": [
+            "Predict bounded point displacements.",
+            "Use rigid-transform-consistent augmentation and recluster after displacement."
+          ]
+        }
+      ],
+      "initial_sweep": [
+        "kNN scale k=4/8/16; epsilon multipliers 0.8/1.0/1.25/1.5.",
+        "Graph k=8/16/24 or comparable radii."
+      ],
+      "sanity_checks": [
+        "Invariant to point order and valid rigid transforms.",
+        "Handle empty clouds, duplicates, singletons, and noise explicitly.",
+        "Reclustering must not collapse the whole cloud."
+      ],
+      "resource_notes": [
+        "Density baselines are CPU-friendly; one V100 is enough for the graph network."
+      ],
+      "failure_pivots": [
+        "Variable-density failure: use per-cloud scaling or HDBSCAN/OPTICS.",
+        "Merged nearby clusters: bound displacement and reduce neighborhood radius."
+      ]
+    },
+    "xray_diffraction_denoising": {
+      "title": "X-ray diffraction intensity denoising",
+      "match": {
+        "minimum_score": 13,
+        "minimum_margin": 3,
+        "required_groups": [
+          {
+            "source": "both",
+            "any": [
+              "x[- ]?ray diffraction",
+              "\\bxrd\\b",
+              "diffraction pattern"
+            ]
+          },
+          {
+            "source": "text",
+            "any": [
+              "denois",
+              "noise",
+              "low[- ]count",
+              "high[- ]count",
+              "clean"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "image",
+              "intensity",
+              "detector",
+              "pattern"
+            ]
+          }
+        ],
+        "patterns": [
+          {
+            "pattern": "x[- ]?ray diffraction",
+            "weight": 14,
+            "source": "text",
+            "label": "X-ray diffraction"
+          },
+          {
+            "pattern": "(?:denois|low[- ]count.*high[- ]count|noisy.*clean)",
+            "weight": 9,
+            "source": "text",
+            "label": "paired denoising"
+          },
+          {
+            "pattern": "diffraction peaks?",
+            "weight": 4,
+            "source": "text",
+            "label": "peak preservation"
+          },
+          {
+            "pattern": "psnr|ssim|mae|mse",
+            "weight": 2,
+            "source": "text",
+            "label": "restoration metric"
+          }
+        ],
+        "negative_patterns": [
+          {
+            "pattern": "protein backbone|amino acid sequence",
+            "weight": 12,
+            "source": "text"
+          },
+          {
+            "pattern": "point cloud",
+            "weight": 10,
+            "source": "text"
+          }
+        ]
+      },
+      "problem_signature": [
+        "Paired low/high-quality diffraction intensity arrays have heavy-tailed dynamic range.",
+        "Narrow scientific peaks must be restored rather than semantically classified or oversmoothed."
+      ],
+      "launch_sequence": [
+        "Audit pairing, detector masks, dynamic range, and specimen-level split boundaries.",
+        "Establish identity, variance-stabilizing, and small residual U-Net baselines.",
+        "Compare log1p and asinh transforms with exact inverse transforms.",
+        "Fine-tune one-channel NAFNet when local code/weights exist; use Restormer as a second architecture family, not an immediate ensemble.",
+        "Start with L1/Charbonnier, adding a small gradient/structural term only when peak fidelity improves."
+      ],
+      "cheap_baselines": [
+        "Identity mapping.",
+        "Variance-stabilizing transform plus a light classical filter.",
+        "Small residual U-Net trained from scratch."
+      ],
+      "models": [
+        {
+          "name": "Small residual U-Net",
+          "tier": "general",
+          "role": "train-from-scratch control",
+          "instructions": [
+            "Use one-channel residual prediction and avoid oversampling blank patches."
+          ]
+        },
+        {
+          "name": "NAFNet",
+          "tier": "general",
+          "asset": "nafnet",
+          "asset_required": true,
+          "role": "primary restoration warm start",
+          "instructions": [
+            "Adapt input/output layers to one channel while preserving interior weights.",
+            "Fine-tune only on locally available paired measured data."
+          ]
+        },
+        {
+          "name": "Restormer",
+          "tier": "general",
+          "asset": "restormer",
+          "asset_required": true,
+          "role": "alternative restoration warm start",
+          "instructions": [
+            "Check target patch-size memory before a long run."
+          ]
+        }
+      ],
+      "initial_sweep": [
+        "log1p vs asinh; patch sizes 64/128.",
+        "L1 vs Charbonnier; gradient/structural weight 0/0.05/0.10.",
+        "One conservative warm-start LR and one 3x smaller."
+      ],
+      "sanity_checks": [
+        "Split by original specimen/image before patching.",
+        "Outputs are finite, correctly shaped, and nonnegative when required.",
+        "Track peak position, width, and integrated intensity in addition to the primary metric.",
+        "Beat identity without winning solely by smoothing."
+      ],
+      "resource_notes": [
+        "One V100 is sufficient for patch training; use accumulation before multi-GPU complexity."
+      ],
+      "failure_pivots": [
+        "Unstable warm start: return to the small U-Net and audit normalization.",
+        "Blurred peaks: rebalance peak patches and reduce structural smoothing."
+      ]
+    },
+    "molecular_linker_design": {
+      "title": "Three-dimensional molecular linker design",
+      "match": {
+        "minimum_score": 14,
+        "minimum_margin": 3,
+        "required_groups": [
+          {
+            "source": "both",
+            "any": [
+              "molecule",
+              "molecular",
+              "chemical",
+              "ligand"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "fragments?",
+              "attachment points?"
+            ]
+          },
+          {
+            "source": "text",
+            "any": [
+              "linker",
+              "connect.*fragment",
+              "fragment.*connect"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "3d",
+              "three[- ]dimensional",
+              "coordinates?",
+              "geometry",
+              "conformer"
+            ]
+          }
+        ],
+        "patterns": [
+          {
+            "pattern": "molecular linker design",
+            "weight": 16,
+            "source": "text",
+            "label": "molecular-linker objective"
+          },
+          {
+            "pattern": "(?:connect|join).*fragments?|fragments?.*(?:connect|join)",
+            "weight": 8,
+            "source": "text",
+            "label": "fragment connection"
+          },
+          {
+            "pattern": "attachment points?",
+            "weight": 5,
+            "source": "both",
+            "label": "attachment points"
+          },
+          {
+            "pattern": "(?:3d|three[- ]dimensional).*(?:geometry|coordinates?|molecule)",
+            "weight": 5,
+            "source": "text",
+            "label": "3D geometry"
+          },
+          {
+            "pattern": "validity|uniqueness|connectivity|rmsd",
+            "weight": 2,
+            "source": "text",
+            "label": "generative metrics"
+          }
+        ],
+        "negative_patterns": [
+          {
+            "pattern": "protein backbone.*sequence|inverse folding",
+            "weight": 14,
+            "source": "text"
+          },
+          {
+            "pattern": "x[- ]?ray diffraction",
+            "weight": 12,
+            "source": "text"
+          }
+        ]
+      },
+      "problem_signature": [
+        "Two fragments plus attachment atoms/geometry condition a variable-size generated linker.",
+        "Chemical validity, exact fragment connectivity, atom mapping, and geometry are hard gates.",
+        "Exact source-task implementations are deliberately absent from this general prior."
+      ],
+      "launch_sequence": [
+        "Write an RDKit validator first: attachment atoms, atom maps, fragments present exactly once, sanitization, and connectivity.",
+        "Fit a visible-data linker-length/attachment-distance prior and make a deterministic reconnection baseline.",
+        "Train a compact E(3)-equivariant conditional graph/diffusion model from scratch.",
+        "Generate multiple candidates, reject invalid molecules, then rank by task-visible geometry and model score.",
+        "Enable any specialist checkpoint arm only when the specialist tier is explicitly selected and the local asset is available."
+      ],
+      "cheap_baselines": [
+        "RDKit constrained alkyl/fragment-library reconnection.",
+        "Conditional linker-length predictor plus a small template library.",
+        "Split-safe nearest-neighbor retrieval by fragment geometry."
+      ],
+      "models": [
+        {
+          "name": "Compact E(3)-equivariant conditional diffusion model",
+          "tier": "general",
+          "role": "default train-from-scratch generator",
+          "instructions": [
+            "Condition on fragments, attachments, relative geometry, and linker length.",
+            "Start with a few EGNN-style blocks and a modest diffusion horizon."
+          ]
+        },
+        {
+          "name": "RDKit constrained reconnection baseline",
+          "tier": "general",
+          "role": "transparent fallback and contract validator",
+          "instructions": [
+            "Guarantee both fragments are present and connected.",
+            "Use no external compound service."
+          ]
+        },
+        {
+          "name": "DeLinker",
+          "tier": "specialist",
+          "asset": "delinker",
+          "asset_required": true,
+          "role": "optional pre-existing specialist prior",
+          "instructions": [
+            "Use only the local implementation/checkpoint.",
+            "Report separately from the general-prior condition."
+          ]
+        }
+      ],
+      "initial_sweep": [
+        "Length prior mode vs nearby lengths.",
+        "4/6 equivariant blocks, width 128/256 after smoke tests.",
+        "50/100 diffusion steps; 16 candidates first, then 64 only if useful."
+      ],
+      "sanity_checks": [
+        "RDKit sanitization and exact fragment preservation.",
+        "Correct attachments, bond orders, charges, stereochemistry, and atom maps.",
+        "Finite coordinates, no catastrophic clashes, no disconnected outputs.",
+        "Report validity/connectivity separately from the primary score."
+      ],
+      "resource_notes": [
+        "One V100 can train a compact generator; parallelize CPU RDKit checks conservatively."
+      ],
+      "failure_pivots": [
+        "Low validity: fix bookkeeping, length conditioning, and sanitization before architecture tuning.",
+        "Valid but poor geometry: strengthen relative-coordinate conditioning before adding size."
+      ]
+    },
+    "irregular_temporal_sequence_modeling": {
+      "title": "Temporal sequence modeling with irregular sampling",
+      "match": {
+        "minimum_score": 13,
+        "minimum_margin": 3,
+        "required_groups": [
+          {
+            "source": "text",
+            "any": [
+              "irregular sampling",
+              "irregularly sampled",
+              "observation times?",
+              "time gaps?",
+              "delta[-_ ]?t",
+              "missing observations?"
+            ]
+          },
+          {
+            "source": "both",
+            "any": [
+              "temporal",
+              "sequence",
+              "time series",
+              "trajectory"
+            ]
+          }
+        ],
+        "patterns": [
+          {
+            "pattern": "irregular(?:ly)?[ -]sampled|irregular sampling",
+            "weight": 14,
+            "source": "text",
+            "label": "irregular sampling"
+          },
+          {
+            "pattern": "temporal sequence modeling",
+            "weight": 8,
+            "source": "text",
+            "label": "temporal sequence objective"
+          },
+          {
+            "pattern": "(?:observation times?|time gaps?|delta[-_ ]?t|timestamp)",
+            "weight": 5,
+            "source": "both",
+            "label": "explicit time information"
+          },
+          {
+            "pattern": "(?:mask|missingness|partially observed)",
+            "weight": 3,
+            "source": "text",
+            "label": "missingness"
+          },
+          {
+            "pattern": "(?:walker|activity recognition|sequential.*mnist|imdb|binary sequence)",
+            "weight": 3,
+            "source": "text",
+            "label": "subtype clues"
+          }
+        ],
+        "negative_patterns": [
+          {
+            "pattern": "x[- ]?ray diffraction|protein backbone|molecular linker",
+            "weight": 12,
+            "source": "text"
+          }
+        ]
+      },
+      "problem_signature": [
+        "Measurements arrive at unequal time gaps and may include masks or partially observed channels.",
+        "Numerical trajectories, sequential pixels, text tokens, and sensor streams require different routing despite a shared temporal wrapper."
+      ],
+      "launch_sequence": [
+        "Inspect tensor semantics, timestamp units/sorting, masks, target horizon, and subtype: numerical, image-derived, text-derived, or sensor/control.",
+        "Create explicit delta-time and observation-mask channels; separate padding from true missingness.",
+        "Run a standard GRU and GRU-D-style baseline.",
+        "For irregular numerical trajectories compare CfC/LTC-style recurrence and Neural CDE; for sequential pixels use compact GRU/CfC; for token text use embedding plus BiGRU/CNN/small Transformer.",
+        "Select the family on task-faithful validation, then tune hidden size and LR lightly."
+      ],
+      "cheap_baselines": [
+        "Last observation plus elapsed-time features.",
+        "Masked summaries plus a linear/tree model.",
+        "Standard GRU with delta-time/mask channels.",
+        "GRU-D-style decay."
+      ],
+      "models": [
+        {
+          "name": "GRU-D",
+          "tier": "general",
+          "role": "missingness-aware baseline trained from scratch",
+          "instructions": [
+            "Use masks and time-since-last-observation separately.",
+            "Audit zero and very large gaps."
+          ]
+        },
+        {
+          "name": "CfC/LTC-style recurrent model",
+          "tier": "general",
+          "role": "continuous-time recurrence for irregular numerical sequences",
+          "instructions": [
+            "Condition updates explicitly on elapsed time.",
+            "Compare with GRU-D under the same split."
+          ]
+        },
+        {
+          "name": "Neural CDE",
+          "tier": "general",
+          "role": "path model when interpolation semantics fit",
+          "instructions": [
+            "Use split-safe interpolation and account for solver cost.",
+            "Do not use for token sequences by reflex."
+          ]
+        },
+        {
+          "name": "Subtype-specific compact sequence model",
+          "tier": "general",
+          "role": "router fallback",
+          "instructions": [
+            "Sequential pixels: compact GRU/CfC.",
+            "Tokenized text: embedding plus BiGRU/CNN/small Transformer.",
+            "Sensor/control: GRU-D, CfC, or Neural CDE."
+          ]
+        }
+      ],
+      "initial_sweep": [
+        "GRU/GRU-D/CfC/Neural CDE only where semantically applicable.",
+        "Hidden size 64/128/256; LR 1e-3/3e-4; dropout 0/0.1.",
+        "Raw time units vs training-set median-gap normalization."
+      ],
+      "sanity_checks": [
+        "Sorted finite timestamps with consistent units.",
+        "Padding, missing values, and true zeros are distinguishable.",
+        "No preprocessing/vocabulary leakage.",
+        "Validation preserves target/horizon semantics.",
+        "Include a timestamp-ignorant ablation."
+      ],
+      "resource_notes": [
+        "Most arms fit on one V100; cap Neural CDE solver cost before increasing model size."
+      ],
+      "failure_pivots": [
+        "Continuous-time underperformance: audit time units and subtype suitability.",
+        "Overfitting: shrink the model and return to explicit-time GRU rather than adding depth."
+      ]
+    }
+  }
+}

@@ -67,7 +67,10 @@ logs/
 
 # ===== Project Specific =====
 cache/
-scripts/
+scripts/*
+# scientific cold-start utilities from the NatureBench overlay are tracked
+!scripts/preview_coldstart.py
+!scripts/validate_coldstart_assets.py
 workspace/
 workspaces/
 test_workspace/

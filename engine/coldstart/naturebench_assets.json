@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "description": "Local-only asset manifest for scientific cold-start recipes. This file never downloads assets.",
+  "assets": {
+    "proteinmpnn": {
+      "display_name": "ProteinMPNN",
+      "tier": "general",
+      "env_var": "PROTEINMPNN_DIR",
+      "relative_roots": [
+        "ProteinMPNN",
+        "proteinmpnn"
+      ],
+      "probe_all": [
+        "protein_mpnn_run.py"
+      ],
+      "probe_any": [
+        "vanilla_model_weights/v_48_020.pt",
+        "vanilla_model_weights/v_48_010.pt",
+        "ca_model_weights/v_48_020.pt"
+      ],
+      "notes": "Expected to contain the local source tree and at least one compatible checkpoint."
+    },
+    "esm_if1": {
+      "display_name": "ESM-IF1",
+      "tier": "general",
+      "env_var": "ESM_IF1_DIR",
+      "relative_roots": [
+        "esm_if1",
+        "esm-if1",
+        "esm"
+      ],
+      "probe_any_glob": [
+        "*.pt",
+        "**/*.pt",
+        "**/*.pth"
+      ],
+      "notes": "May point directly to a local checkpoint file or to a directory containing it."
+    },
+    "nafnet": {
+      "display_name": "NAFNet",
+      "tier": "general",
+      "env_var": "NAFNET_DIR",
+      "relative_roots": [
+        "NAFNet",
+        "nafnet"
+      ],
+      "probe_any_glob": [
+        "**/*.pth",
+        "**/*.pt",
+        "**/*.ckpt"
+      ],
+      "notes": "Expected to contain local restoration code and a compatible checkpoint."
+    },
+    "restormer": {
+      "display_name": "Restormer",
+      "tier": "general",
+      "env_var": "RESTORMER_DIR",
+      "relative_roots": [
+        "Restormer",
+        "restormer"
+      ],
+      "probe_any_glob": [
+        "**/*.pth",
+        "**/*.pt",
+        "**/*.ckpt"
+      ],
+      "notes": "Expected to contain local restoration code and a compatible checkpoint."
+    },
+    "delinker": {
+      "display_name": "DeLinker",
+      "tier": "specialist",
+      "env_var": "DELINKER_DIR",
+      "relative_roots": [
+        "DeLinker",
+        "delinker"
+      ],
+      "probe_any_glob": [
+        "**/*.ckpt",
+        "**/*.h5",
+        "**/*.pt",
+        "**/*.pth"
+      ],
+      "notes": "Optional specialist-tier local implementation and checkpoint."
+    }
+  }
+}
