@@ -2,6 +2,7 @@
 
 import logging
 import time
+from naturebench_adapter import effective_elapsed_seconds
 
 logger = logging.getLogger("MLEvolve")
 
@@ -15,7 +16,7 @@ def should_trigger_branch_fusion(agent) -> bool:
         return False
 
     scfg = agent.scfg
-    elapsed_time = time.time() - agent.search_start_time
+    elapsed_time = effective_elapsed_seconds(agent.cfg, agent.search_start_time)
     if elapsed_time < scfg.fusion_min_time_hours * 3600 or elapsed_time > scfg.fusion_max_time_hours * 3600:
         return False
 

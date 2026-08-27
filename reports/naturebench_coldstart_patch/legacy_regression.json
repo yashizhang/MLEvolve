@@ -1,0 +1,58 @@
+{
+  "experiments": {
+    "3d-object-detection-for-autonomous-vehicles": {
+      "category": "Detection",
+      "legacy_matches_prepatch": true,
+      "auto_matches_legacy": true,
+      "is_none_model": false,
+      "guidance_len": 1052,
+      "guidance_head": "\nModel1: DINOv3\n\nDescription:DINOv3 is an extended family of versatile vision foundation models producing high-quality d"
+    },
+    "AI4Code": {
+      "category": "NLP",
+      "legacy_matches_prepatch": true,
+      "auto_matches_legacy": true,
+      "is_none_model": false,
+      "guidance_len": 4411,
+      "guidance_head": "\nModel1: ModernBERT\n\nDescription:ModernBERT is a modernized bidirectional encoder-only Transformer model pre-trained on "
+    },
+    "aerial-cactus-identification": {
+      "category": "General Image",
+      "legacy_matches_prepatch": true,
+      "auto_matches_legacy": true,
+      "is_none_model": false,
+      "guidance_len": 1698,
+      "guidance_head": "\nModel1: DINOv3\n\nDescription:DINOv3 is an extended family of versatile vision foundation models producing high-quality d"
+    },
+    "alaska2-image-steganalysis": {
+      "category": "General Image",
+      "legacy_matches_prepatch": true,
+      "auto_matches_legacy": true,
+      "is_none_model": false,
+      "guidance_len": 1698,
+      "guidance_head": "\nModel1: DINOv3\n\nDescription:DINOv3 is an extended family of versatile vision foundation models producing high-quality d"
+    },
+    "aptos2019-blindness-detection": {
+      "category": "General Image",
+      "legacy_matches_prepatch": true,
+      "auto_matches_legacy": true,
+      "is_none_model": false,
+      "guidance_len": 1698,
+      "guidance_head": "\nModel1: DINOv3\n\nDescription:DINOv3 is an extended family of versatile vision foundation models producing high-quality d"
+    }
+  },
+  "unknown_exp": {
+    "prepatch": "None model",
+    "legacy": "None model",
+    "auto": "None model",
+    "all_none_model": true
+  },
+  "auto_unknown_equals_semantic_no_guidance": true,
+  "placeholder": {
+    "searched": 0,
+    "found_placeholder_exp": "3d-object-detection-for-autonomous-vehicles",
+    "replaced_ok": true,
+    "prepatch_text_matches": true
+  },
+  "overall_pass": true
+}

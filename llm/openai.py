@@ -9,6 +9,7 @@ from typing import Any
 from openai import OpenAI
 
 from config import Config
+from naturebench_adapter import adapt_prompt, is_naturebench
 from .gemini import FunctionSpec, compile_prompt_to_md
 from .model_profiles import get_profile, supports_json_schema, thinking_json_incompatible, supports_tool_choice_required, get_thinking_extra_body
 
@@ -105,6 +106,16 @@ def query(
     """OpenAI-compatible query (chat completions, optional function calling). Same return shape as gemini.query."""
     if cfg is None:
         raise ValueError("cfg is required for OpenAI backend")
+    if is_naturebench(cfg):
+        from . import luna_responses
+
+        return luna_responses.query(
+            system_message=adapt_prompt(system_message or "", cfg) if system_message else None,
+            user_message=adapt_prompt(user_message or "", cfg) if user_message else None,
+            func_spec=func_spec,
+            cfg=cfg,
+            max_tokens=int(model_kwargs.get("max_tokens") or 16384),
+        )
     filtered = {k: v for k, v in model_kwargs.items() if v is not None}
     model = filtered.get("model", "")
     stage = _stage_config_for_model(cfg, model)
@@ -240,6 +251,26 @@ def generate(
     stage = cfg.agent.code
     model = stage.model
     messages = _prompt_to_messages(prompt, model=model)
+    if is_naturebench(cfg):
+        from . import luna_responses
+
+        adapted_messages = [
+            {
+                **message,
+                "content": adapt_prompt(
+                    str(message.get("content", "")),
+                    cfg,
+                    include_contract=index == 0,
+                ),
+            }
+            for index, message in enumerate(messages)
+        ]
+        return luna_responses.generate(
+            prompt_messages=adapted_messages,
+            cfg=cfg,
+            json_schema=json_schema,
+            max_tokens=int(max_tokens or 16384),
+        )
     client = OpenAI(
         api_key=stage.api_key,
         base_url=stage.base_url or None,

@@ -1,0 +1,131 @@
+{
+  "current_configured_root": {
+    "assets": {
+      "delinker": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "set DELINKER_DIR to a local file or directory"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "esm_if1": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "set ESM_IF1_DIR to a local file or directory"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "nafnet": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "set NAFNET_DIR to a local file or directory"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "proteinmpnn": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "set PROTEINMPNN_DIR to a local file or directory"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "restormer": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "set RESTORMER_DIR to a local file or directory"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      }
+    },
+    "missing_required": [],
+    "ok": true,
+    "pretrain_model_dir": "",
+    "schema": "mlevolve.scientific-coldstart-assets.v1"
+  },
+  "intentionally_empty_root": {
+    "assets": {
+      "delinker": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "/tmp/empty_assets.yBwv/DeLinker",
+          "/tmp/empty_assets.yBwv/delinker"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "esm_if1": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "/tmp/empty_assets.yBwv/esm_if1",
+          "/tmp/empty_assets.yBwv/esm-if1",
+          "/tmp/empty_assets.yBwv/esm"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "nafnet": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "/tmp/empty_assets.yBwv/NAFNet",
+          "/tmp/empty_assets.yBwv/nafnet"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "proteinmpnn": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "/tmp/empty_assets.yBwv/ProteinMPNN",
+          "/tmp/empty_assets.yBwv/proteinmpnn"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      },
+      "restormer": {
+        "available": false,
+        "configured_by": "",
+        "expected_locations": [
+          "/tmp/empty_assets.yBwv/Restormer",
+          "/tmp/empty_assets.yBwv/restormer"
+        ],
+        "path": null,
+        "reason": "local asset was not found; skip this arm rather than downloading it"
+      }
+    },
+    "missing_required": [],
+    "ok": true,
+    "pretrain_model_dir": "/tmp/empty_assets.yBwv",
+    "schema": "mlevolve.scientific-coldstart-assets.v1"
+  },
+  "offline_fallback_guidance": {
+    "inverse_protein_folding": {
+      "recipe": "inverse_protein_folding",
+      "marker_ok": true,
+      "mentions_unavailable_or_fallback": true,
+      "forbids_download": true,
+      "snippet": "## Scientific cold-start prior\n\n**Matched recipe:** Inverse protein folding from backbone structure (`inverse_protein_folding`)\n**Router confidence:** high; score=27; margin=27\n**Visible evidence:** inverse-protein-folding objective; backbone-to-sequence mapping; sequence-design validation\n\nThis is a reusable methodological prior inferred from visible task semantics, not an answer key. Inspect the actual arrays, schemas, and output contract before choosing an arm.\n\n### Problem signature\n- Protein backbone geometry conditions one amino-acid sequence per structure or designed chain.\n- Chain mapp"
+    },
+    "xray_diffraction_denoising": {
+      "recipe": "xray_diffraction_denoising",
+      "marker_ok": true,
+      "mentions_unavailable_or_fallback": true,
+      "forbids_download": true,
+      "snippet": "## Scientific cold-start prior\n\n**Matched recipe:** X-ray diffraction intensity denoising (`xray_diffraction_denoising`)\n**Router confidence:** high; score=27; margin=27\n**Visible evidence:** X-ray diffraction; paired denoising; peak preservation\n\nThis is a reusable methodological prior inferred from visible task semantics, not an answer key. Inspect the actual arrays, schemas, and output contract before choosing an arm.\n\n### Problem signature\n- Paired low/high-quality diffraction intensity arrays have heavy-tailed dynamic range.\n- Narrow scientific peaks must be restored rather than semantica"
+    }
+  },
+  "conclusion": "No configured real asset cache; all five assets unavailable in both roots; strict_assets=false keeps guidance valid with fallback arms; resolution is local-only (env vars + local paths)."
+}

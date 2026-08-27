@@ -12,6 +12,7 @@ from config import Config
 from utils.metric import WorstMetricValue
 import threading
 import json
+from naturebench_adapter import effective_elapsed_seconds, expired, is_naturebench
 
 from agents import (
     draft_agent, improve_agent, debug_agent,
@@ -117,6 +118,14 @@ class AgentSearch:
 
     def update_data_preview(self):
         base_preview = data_preview.generate(self.cfg.workspace_dir)
+        if is_naturebench(self.cfg):
+            self.data_preview = base_preview + """
+
+        NATUREBENCH OUTPUT NOTE:
+        - The public README and data description are the sole authority for output names and schemas.
+        - There is no generic CSV submission contract. Write every required artifact under OUTPUT_DIR.
+        """
+            return
         submission_format_warning = """
 
         ⚠️  CRITICAL SUBMISSION FORMAT NOTE:
@@ -162,7 +171,7 @@ class AgentSearch:
                 elif parent_node.is_buggy is False:
                     can_use_fusion = False
                     if self.search_start_time:
-                        elapsed_time = time.time() - self.search_start_time
+                        elapsed_time = effective_elapsed_seconds(self.cfg, self.search_start_time)
                         if elapsed_time >= self.acfg.time_limit / 2:
                             can_use_fusion = True
                     is_from_topk = getattr(parent_node, '_topk_triggered', False)
@@ -211,7 +220,7 @@ class AgentSearch:
                         logger.info(f"Node {result_node.id} code generated and reviewed, execution deferred")
                         result_node.pending_execution = True
                         return _root, result_node
-                    exe_res = exec_callback(result_node.code, result_node.id, True)
+                    exe_res = exec_callback(result_node.code, result_node.id, True, node=result_node)
                     result_node = result_parse_agent.run(self,
                         node=result_node,
                         exec_result=exe_res
@@ -251,6 +260,8 @@ class AgentSearch:
         execute_immediately: bool = True,
         init_solution_path: Optional[str] = None,
     ) -> SearchNode:
+        if is_naturebench(self.cfg) and expired(self.cfg):
+            raise TimeoutError("NatureBench effective solve budget is exhausted")
         if not self.journal.nodes or self.data_preview is None:
             self.update_data_preview()
             self.search_start_time = time.time()
@@ -296,7 +307,7 @@ class AgentSearch:
         parent_node = node.parent
 
         try:
-            exe_res = exec_callback(node.code, node.id, True)
+            exe_res = exec_callback(node.code, node.id, True, node=node)
             node = result_parse_agent.run(self,
                 node=node,
                 exec_result=exe_res

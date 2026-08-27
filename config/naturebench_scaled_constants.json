@@ -1,0 +1,29 @@
+{
+  "schema": "naturebench.mlevolve-scaled-absolute-time-constants",
+  "source_total_hours": 12.0,
+  "target_total_hours": 4.0,
+  "scale_factor": 0.3333333333333333,
+  "constants": [
+    {
+      "path": "agent.time_limit",
+      "source_value_seconds": 43200,
+      "target_value_seconds": 14400
+    },
+    {
+      "path": "exec.timeout",
+      "source_value_seconds": 32400,
+      "target_value_seconds": 10800
+    },
+    {
+      "path": "agent.search.fusion_min_time_hours",
+      "source_value_hours": 6.0,
+      "target_value_hours": 2.0
+    },
+    {
+      "path": "agent.search.fusion_max_time_hours",
+      "source_value_hours": 10.0,
+      "target_value_hours": 3.3333333333333335
+    }
+  ],
+  "dimensionless_and_count_settings_changed": false
+}

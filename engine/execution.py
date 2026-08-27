@@ -4,6 +4,7 @@ import logging
 
 from engine.search_node import SearchNode
 from utils.metric import WorstMetricValue
+from naturebench_adapter import is_naturebench
 
 logger = logging.getLogger("MLEvolve")
 
@@ -21,6 +22,13 @@ _ZERO_METRIC_ANALYSIS = (
 def validate_executed_node(agent, node: SearchNode):
     """Check submission.csv exists, metric=0.0 anomaly; register successful node to branch."""
     if node.is_buggy:
+        return
+
+    if is_naturebench(agent.cfg):
+        if hasattr(node, 'branch_id') and node.branch_id:
+            if node.branch_id not in agent.branch_successful_nodes:
+                agent.branch_successful_nodes[node.branch_id] = []
+            agent.branch_successful_nodes[node.branch_id].append(node)
         return
 
     submission_path = agent.cfg.workspace_dir / "submission" / f"submission_{node.id}.csv"

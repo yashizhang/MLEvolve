@@ -1,0 +1,70 @@
+{
+  "schema": "mlevolve.scientific-coldstart-install.v1",
+  "bundle_version": "scientific-coldstart-v1.1",
+  "base_commit": "7d8403c899c40f01941c0429f1c4ef51e82ae41c",
+  "head_before_install": "e38df170f1c6e670aa2d7749206a508464be0414",
+  "installed_at_utc": "2026-08-27T21:41:16.125099+00:00",
+  "dry_run": true,
+  "changes": [
+    {
+      "path": "engine/coldstart/knowledge.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "engine/coldstart/__init__.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "engine/coldstart/naturebench.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "engine/coldstart/naturebench_recipes.json",
+      "action": "unchanged"
+    },
+    {
+      "path": "engine/coldstart/naturebench_assets.json",
+      "action": "unchanged"
+    },
+    {
+      "path": "config/coldstart_naturebench.yaml",
+      "action": "unchanged"
+    },
+    {
+      "path": "docs/naturebench_coldstart.md",
+      "action": "unchanged"
+    },
+    {
+      "path": "scripts/preview_coldstart.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "scripts/validate_coldstart_assets.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "tests/test_naturebench_coldstart.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "config/config.yaml",
+      "action": "unchanged"
+    },
+    {
+      "path": "config/__init__.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "run.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "agents/draft_agent.py",
+      "action": "unchanged"
+    },
+    {
+      "path": "agents/coder/stepwise_coder.py",
+      "action": "unchanged"
+    }
+  ]
+}

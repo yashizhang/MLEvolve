@@ -1,0 +1,166 @@
+===== 4.1 syntax and data validation =====
+--- compileall ---
+COMPILEALL_OK
+--- json.tool ---
+JSON_OK engine/coldstart/naturebench_recipes.json
+JSON_OK engine/coldstart/naturebench_assets.json
+JSON_OK .mlevolve_scientific_coldstart.json
+--- git diff --check ---
+config/config.yaml:1: trailing whitespace.
++# ============================================================
+config/config.yaml:2: trailing whitespace.
++#  Data & paths
+config/config.yaml:3: trailing whitespace.
++# ============================================================
+config/config.yaml:4: trailing whitespace.
++task_mode: mlebench
+config/config.yaml:5: trailing whitespace.
++evaluation_backend: mlebench
+config/config.yaml:48: trailing whitespace.
++  code:
+config/config.yaml:52: trailing whitespace.
++    api_key: ""    # Gemini API key
+config/config.yaml:53: trailing whitespace.
++    reasoning_effort: null
+config/config.yaml:54: trailing whitespace.
++  feedback:
+config/config.yaml:58: trailing whitespace.
++    api_key: ""    # Gemini API key
+config/config.yaml:59: trailing whitespace.
++    reasoning_effort: null
+config/config.yaml:157: trailing whitespace.
++  resolver: "auto"                    # legacy exact map first, then semantic scientific recipes
+config/config.yaml:158: trailing whitespace.
++  recipe_json_path: "engine/coldstart/naturebench_recipes.json"
+config/config.yaml:159: trailing whitespace.
++  asset_manifest_path: "engine/coldstart/naturebench_assets.json"
+config/config.yaml:160: trailing whitespace.
++  prior_tier: "general"               # general | specialist | oracle
+config/config.yaml:161: trailing whitespace.
++  recipe_override: ""                 # debugging only; normal runs use semantic routing
+config/config.yaml:162: trailing whitespace.
++  strict_assets: False                 # missing local weights skip the arm by default
+config/config.yaml:163: trailing whitespace.
++  max_inventory_files: 256             # path names only; file contents are never inspected
+config/config.yaml:164: trailing whitespace.
++  selected_recipe_id: ""               # populated at runtime for provenance
+config/config.yaml:165: trailing whitespace.
++  selected_recipe_score: 0.0            # populated at runtime
+config/config.yaml:166: trailing whitespace.
++  selected_recipe_margin: 0.0           # populated at runtime
+config/config.yaml:167: trailing whitespace.
++  selected_recipe_confidence: ""       # populated at runtime
+config/config.yaml:168: trailing whitespace.
++  selected_recipe_evidence: []          # populated at runtime
+run.py:18: trailing whitespace.
++import torch
+run.py:19: trailing whitespace.
++from naturebench_adapter import assert_startup_config, expired, is_naturebench
+run.py:24: trailing whitespace.
++    cfg = load_cfg()
+run.py:25: trailing whitespace.
++    assert_startup_config(cfg)
+run.py:36: trailing whitespace.
++        cfg.coldstart.description = build_guidance_description(cfg, task_desc=task_desc)
+run.py:44: trailing whitespace.
++    def cleanup():
+run.py:45: trailing whitespace.
++        if global_step == 0 and not is_naturebench(cfg):
+run.py:46: trailing whitespace.
++            shutil.rmtree(cfg.workspace_dir)
+run.py:64: trailing whitespace.
++    def exec_callback(*args, **kwargs):
+run.py:68: trailing whitespace.
++        return res
+run.py:94: trailing whitespace.
++        for draft_idx in range(min(initial_draft_count, total_steps)):
+run.py:95: trailing whitespace.
++            if is_naturebench(cfg) and expired(cfg):
+run.py:96: trailing whitespace.
++                logger.info("NatureBench effective budget expired during draft generation")
+run.py:97: trailing whitespace.
++                break
+run.py:123: trailing whitespace.
++        executor = ThreadPoolExecutor(max_workers=max_workers)
+run.py:124: trailing whitespace.
++        interrupted = False
+run.py:125: trailing whitespace.
++        budget_expired = False
+run.py:141: trailing whitespace.
++            while completed < total_steps:
+run.py:142: trailing whitespace.
++                if is_naturebench(cfg) and expired(cfg):
+run.py:143: trailing whitespace.
++                    budget_expired = True
+run.py:144: trailing whitespace.
++                    logger.info("NatureBench effective budget expired; stopping MLEvolve search")
+run.py:145: trailing whitespace.
++                    interpreter.terminate_all_subprocesses()
+run.py:146: trailing whitespace.
++                    for future in futures:
+run.py:147: trailing whitespace.
++                        future.cancel()
+run.py:148: trailing whitespace.
++                    with lock:
+run.py:149: trailing whitespace.
++                        save_run(cfg, journal)
+run.py:150: trailing whitespace.
++                    break
+run.py:184: trailing whitespace.
++        finally:
+run.py:185: trailing whitespace.
++            if budget_expired:
+run.py:186: trailing whitespace.
++                executor.shutdown(wait=False, cancel_futures=True)
+run.py:187: trailing whitespace.
++            elif not interrupted:
+run.py:188: trailing whitespace.
++                executor.shutdown(wait=True)
+
+===== 4.2 installed target tests =====
+...................                                                      [100%]
+19 passed in 5.74s
+--- full tests/ dir (incl. pre-existing adapter tests) ---
+.........................                                                [100%]
+25 passed in 5.42s
+
+===== 4.1 re-run after line-ending fix =====
+COMPILEALL_OK
+JSON_OK engine/coldstart/naturebench_recipes.json
+JSON_OK engine/coldstart/naturebench_assets.json
+JSON_OK .mlevolve_scientific_coldstart.json
+DIFF_CHECK_OK
+
+===== 4.2 re-run after line-ending fix =====
+.........................                                                [100%]
+25 passed in 4.87s
+
+===== 4.3 overlay installer tests (from extracted overlay) =====
+......................                                                   [100%]
+22 passed in 0.25s
+
+===== 4.4 Idempotency =====
+Second dry-run: 15/15 actions "unchanged" (see installer_idempotency.json).
+Second real pass: git diff before/after byte-identical (IDEMPOTENT_DIFF_IDENTICAL).
+
+===== 4.5 Legacy Kaggle regression =====
+5 sampled real experiment IDs from competition_tag_classified.json:
+  resolver=legacy output byte-identical to pre-patch build_guidance_description: PASS (5/5)
+  resolver=auto returns the exact legacy mapping for mapped IDs: PASS (5/5)
+  unknown experiment -> exactly "None model" (prepatch, legacy, auto): PASS
+  {TORCH_HUB_DIR} placeholder replacement (3d-object-detection-for-autonomous-vehicles): PASS, identical to prepatch
+Machine-readable details: legacy_regression.json (overall_pass=true)
+
+===== Phase 5 six-domain semantic routing =====
+GATE: 6/6 correct (router_matrix.json, all_matched=true, inventory_clean=true)
+
+===== Phase 6 contamination/ambiguity/security =====
+contamination_and_security.json: overall_pass=true (11 checks)
+
+===== Phase 7 assets =====
+asset_report.json: all five assets unavailable (no configured cache); strict_assets=false guidance remains valid with fallback arms; local-only resolution.
+
+===== Phase 8 runtime smoke =====
+runtime_smoke.json: overall_pass=true (config profile merge, structured schema, run.py guidance path,
+provenance serialization round trip, draft + stepwise scientific/legacy prompt branches).
+Live LLM smoke not run (no API credentials used in this goal).

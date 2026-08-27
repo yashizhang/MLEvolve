@@ -47,6 +47,9 @@ class SearchNode(DataClassJsonMixin):
     metric: MetricValue = field(default=None, kw_only=True)  # type: ignore
     is_buggy: bool = field(default=None, kw_only=True)  # type: ignore
     is_valid: bool = field(default=None, kw_only=True)  # type: ignore
+    naturebench_candidate_root: str | None = field(default=None, kw_only=True)
+    naturebench_repository_sha256: str | None = field(default=None, kw_only=True)
+    naturebench_attempt: int | None = field(default=None, kw_only=True)
 
     # ---- search / MCTS ----
     stage: Literal["root", "improve", "debug", "draft", "fusion_draft", "evolution", "fusion"]

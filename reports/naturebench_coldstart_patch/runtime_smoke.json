@@ -1,0 +1,30 @@
+{
+  "profile_merged": true,
+  "structured_schema_accepts_profile": true,
+  "task_desc_len": 5857,
+  "guidance_nonempty": true,
+  "marker_present": true,
+  "selected_recipe_id": "spatial_multiomics_domain_identification",
+  "selected_recipe_score": 38.0,
+  "selected_recipe_margin": 38.0,
+  "selected_recipe_confidence": "high",
+  "selected_recipe_evidence": [
+    "spatial multi-omics wording",
+    "paired RNA and ATAC",
+    "spatial coordinates",
+    "spatial-domain objective",
+    "clustering metric",
+    "RNA-like files",
+    "ATAC-like files"
+  ],
+  "provenance_in_serialized_container": true,
+  "provenance_survives_save_reload": true,
+  "draft_prompt_scientific_branch": true,
+  "draft_prompt_no_exact_copy_in_scientific": true,
+  "draft_prompt_legacy_branch_for_legacy_guidance": true,
+  "stepwise_scientific_branch": true,
+  "stepwise_legacy_branch": true,
+  "live_llm_smoke": "not run: no API credentials used in this goal; no-LLM runtime/config integration is comprehensive above",
+  "overall_pass": true,
+  "structured_schema_note": "OmegaConf.structured(Config) merges config.yaml + coldstart_naturebench.yaml cleanly: resolver='semantic', prior_tier='general', strict_assets=False, max_inventory_files=256, selected_recipe_evidence is a ListConfig (OmegaConf list type)."
+}

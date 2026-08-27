@@ -116,18 +116,6 @@ class ColdstartConfig:
     task_json_path: str
     model_json_path: str
     description: str
-    resolver: str = "auto"
-    recipe_json_path: str = "engine/coldstart/naturebench_recipes.json"
-    asset_manifest_path: str = "engine/coldstart/naturebench_assets.json"
-    prior_tier: str = "general"
-    recipe_override: str = ""
-    strict_assets: bool = False
-    max_inventory_files: int = 256
-    selected_recipe_id: str = ""
-    selected_recipe_score: float = 0.0
-    selected_recipe_margin: float = 0.0
-    selected_recipe_confidence: str = ""
-    selected_recipe_evidence: list[str] = field(default_factory=list)
 
 
 @dataclass
