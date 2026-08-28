@@ -1,0 +1,9 @@
+repo: /gpfs/projects/AI4D/core-132/yashi/naturebench-lite-framework-comparison-20260825/sources/MLEvolve
+branch: feature/naturebench-scientific-coldstart
+HEAD: 383737e19dfa41a813598b1150d7fef06c846e66
+python: /usr/bin/python Python 3.9.25
+sys.prefix: /usr
+GPU 0: Tesla V100-SXM2-32GB (UUID: GPU-917d6354-f1c8-a546-2039-a57c4517e331)
+GPU 1: Tesla V100-SXM2-32GB (UUID: GPU-3242cca1-6956-aa76-49b3-35a2a4c8d40a)
+GPU 2: Tesla V100-SXM2-32GB (UUID: GPU-d5afbd7c-71bf-580a-b15e-5bf73a2a1bd7)
+GPU 3: Tesla V100-SXM2-32GB (UUID: GPU-b0ae6649-8c56-dcbe-6bb6-c15616d8fc7f)

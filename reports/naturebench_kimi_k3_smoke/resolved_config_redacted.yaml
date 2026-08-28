@@ -1,0 +1,109 @@
+task_mode: naturebench
+evaluation_backend: naturebench_bridge
+data_dir: /gpfs/projects/AI4D/core-132/yashi/naturebench-lite-runtime-20260821/task-naturebench-lite-pro/public-problems/s41467-025-65557-7/problem
+dataset_dir: ''
+desc_file: /gpfs/projects/AI4D/core-132/yashi/naturebench-lite-runtime-20260821/task-naturebench-lite-pro/public-problems/s41467-025-65557-7/problem/README.md
+goal: null
+eval: null
+exp_name: null
+exp_id: ''
+log_dir: /work/framework/framework
+log_level: INFO
+workspace_dir: /work/framework/framework
+preprocess_data: false
+copy_data: false
+start_cpu_id: 0
+cpu_number: 21
+torch_hub_dir: ''
+pretrain_model_dir: ''
+exec:
+  timeout: 1200
+  agent_file_name: runfile.py
+agent:
+  steps: 1
+  time_limit: 2400
+  initial_drafts: 1
+  seed: 42
+  data_preview: true
+  code:
+    model: k3-256k
+    temp: null
+    base_url: http://kimi-relay.internal/v1
+    api_key: <redacted>
+    reasoning_effort: low
+  feedback:
+    model: k3-256k
+    temp: null
+    base_url: http://kimi-relay.internal/v1
+    api_key: <redacted>
+    reasoning_effort: low
+  check_data_leakage: false
+  use_diff_mode: false
+  use_stepwise_generation: false
+  use_evolution: false
+  use_fusion: false
+  use_aggregation: false
+  fusion_vs_evolution_prob: 0.3
+  branch_fusion_trigger_prob: 1.0
+  max_fusion_drafts: 2
+  use_global_memory: false
+  memory_similarity_threshold: 0.7
+  memory_embedding_device: cuda
+  memory_embedding_model_path: /opt/memory-model
+  search:
+    parallel_search_num: 1
+    num_gpus: 1
+    num_drafts: 1
+    num_bugs: 1
+    num_improves: 3
+    topk_max_improves: 10
+    max_debug_depth: 20
+    back_debug_depth: 3
+    debug_prob: 1
+    metric_improvement_threshold: 0.0001
+    max_improve_failure: 3
+    branch_stagnation_threshold: 3
+    topk_stagnation_threshold: 6
+    stagnation_window: 4
+    top_candidates_size: 20
+    explore_switch_start: 0.5
+    explore_switch_end: 0.7
+    min_exploration_weight: 0.2
+    topk_early_k: 5
+    topk_early_max_per_branch: 3
+    topk_late_k: 3
+    topk_late_max_per_branch: 2
+    force_backprop_late_threshold: 0.8
+    force_backprop_late_prob: 0.5
+    force_backprop_mid_threshold: 0.4
+    force_backprop_mid_modulo: 3
+    recent_best_window: 4
+    fusion_min_time_hours: 6
+    fusion_max_time_hours: 10
+    fusion_min_successful_nodes: 2
+    fusion_min_branches: 2
+    use_stagnation_detection: true
+  decay:
+    exploration_constant: 1.414
+    lower_bound: 0.5
+    alpha: 0.01
+    phase_ratios:
+    - 0.3
+    - 0.7
+coldstart:
+  use_coldstart: true
+  task_json_path: engine/coldstart/competition_tag_classified.json
+  model_json_path: engine/coldstart/models_guidance_classified.json
+  description: ''
+  resolver: semantic
+  recipe_json_path: engine/coldstart/naturebench_recipes.json
+  asset_manifest_path: engine/coldstart/naturebench_assets.json
+  prior_tier: general
+  recipe_override: ''
+  strict_assets: false
+  max_inventory_files: 256
+  selected_recipe_id: ''
+  selected_recipe_score: 0.0
+  selected_recipe_margin: 0.0
+  selected_recipe_confidence: ''
+  selected_recipe_evidence: []

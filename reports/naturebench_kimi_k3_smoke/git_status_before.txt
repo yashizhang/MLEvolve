@@ -1,0 +1,3 @@
+# git status --short recorded before any source changes (working tree was clean;
+# the only entry below is this report directory created by the smoke run itself)
+?? reports/naturebench_kimi_k3_smoke/

@@ -1,0 +1,10 @@
+## baseline commands (phase 1)
+$ PYTHONPATH=<common>/src .venv/bin/python -m compileall -q engine/coldstart llm scripts tests naturebench_adapter.py run.py
+COMPILEALL_OK
+$ PYTHONPATH=<common>/src .venv/bin/python -m pytest -q tests/test_naturebench_coldstart.py tests/test_naturebench_adapter.py
+25 passed in 4.48s
+
+## final regression runs (post-change)
+MLEvolve:  compileall OK; pytest tests/ 43 passed (incl. new tests/test_naturebench_kimi.py, 18 tests)
+bridge(common): pytest tests/ 53 passed (incl. new tests/test_kimi_relay.py, 11 tests); compileall OK
+git diff --check: clean in both repos

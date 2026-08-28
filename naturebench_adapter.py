@@ -18,9 +18,33 @@ from naturebench_bridge.jsonio import write_json_atomic
 
 MODEL = "gpt-5.6-luna"
 EFFORT = "xhigh"
+KIMI_MODEL = "k3-256k"
+KIMI_EFFORT = "low"
 PROMPT_ADAPTER_VERSION = "mlevolve-naturebench-v1"
 _CLOCK: NatureBenchClock | None = None
 _CLOCK_LOCK = threading.Lock()
+
+# Supported NatureBench solver profiles. Selection is explicit and auditable:
+# the configured model alone determines the provider; there is no fallback.
+_PROVIDER_PROFILES: dict[str, dict[str, str]] = {
+    MODEL: {
+        "reasoning_effort": EFFORT,
+        "provider": "host-unix-responses-relay",
+    },
+    KIMI_MODEL: {
+        "reasoning_effort": KIMI_EFFORT,
+        "provider": "kimi-openai-compatible",
+    },
+}
+
+
+def provider_for_model(model: str) -> str:
+    """Return the NatureBench provider for an exact configured model ID."""
+    profile = _PROVIDER_PROFILES.get(str(model))
+    if profile is None:
+        supported = ", ".join(sorted(_PROVIDER_PROFILES))
+        raise RuntimeError(f"unsupported NatureBench solver model {model!r}; supported: {supported}")
+    return profile["provider"]
 
 
 def is_naturebench(cfg: Any) -> bool:
@@ -142,24 +166,44 @@ def assert_startup_config(cfg: Any) -> dict[str, Any]:
             "reasoning_effort": str(cfg.agent.feedback.reasoning_effort),
         },
     }
-    if {row["model"] for row in roles.values()} != {MODEL}:
-        raise RuntimeError(f"solver model allowlist must be exactly {{{MODEL!r}}}")
-    if {row["reasoning_effort"] for row in roles.values()} != {EFFORT}:
-        raise RuntimeError("every MLEvolve generative role must use reasoning_effort=xhigh")
-    required_environment = (
-        "NATUREBENCH_LUNA_SOCKET",
+    models = {row["model"] for row in roles.values()}
+    efforts = {row["reasoning_effort"] for row in roles.values()}
+    if len(models) != 1:
+        raise RuntimeError(f"NatureBench roles must share one model, got {sorted(models)}")
+    if len(efforts) != 1:
+        raise RuntimeError(f"NatureBench roles must share one reasoning effort, got {sorted(efforts)}")
+    model = next(iter(models))
+    effort = next(iter(efforts))
+    profile = _PROVIDER_PROFILES.get(model)
+    if profile is None:
+        supported = ", ".join(sorted(_PROVIDER_PROFILES))
+        raise RuntimeError(f"unsupported NatureBench solver model {model!r}; supported: {supported}")
+    if effort != profile["reasoning_effort"]:
+        raise RuntimeError(
+            f"{model} NatureBench profile requires reasoning_effort={profile['reasoning_effort']!r}, got {effort!r}"
+        )
+    provider = profile["provider"]
+    required_environment = [
         "NATUREBENCH_START_REPO",
         "NATUREBENCH_PUBLIC_PROBLEM",
-    )
+    ]
+    if provider == "host-unix-responses-relay":
+        required_environment.append("NATUREBENCH_LUNA_SOCKET")
     missing = [name for name in required_environment if not os.environ.get(name)]
     if missing:
         raise RuntimeError(f"NatureBench runtime environment is incomplete: {missing}")
+    if provider == "kimi-openai-compatible" and not os.environ.get("NATUREBENCH_KIMI_SOCKET"):
+        # Direct OpenAI-compatible mode (host-side probes): both roles need credentials.
+        if not str(getattr(cfg.agent.code, "api_key", "") or ""):
+            raise RuntimeError("Kimi profile requires NATUREBENCH_KIMI_SOCKET or a configured code api_key")
+        if not str(getattr(cfg.agent.feedback, "api_key", "") or ""):
+            raise RuntimeError("Kimi profile requires NATUREBENCH_KIMI_SOCKET or a configured feedback api_key")
     payload = {
         "schema": "naturebench.mlevolve-provider-audit",
         "task_mode": "naturebench",
-        "provider": "host-unix-responses-relay",
-        "model_allowlist": [MODEL],
-        "reasoning_effort_allowlist": [EFFORT],
+        "provider": provider,
+        "model_allowlist": [model],
+        "reasoning_effort_allowlist": [profile["reasoning_effort"]],
         "roles": roles,
         "prompt_adapter_version": PROMPT_ADAPTER_VERSION,
         "automatic_fallback": False,
@@ -215,8 +259,8 @@ def materialize_candidate_command(
         "branch_id": getattr(node, "branch_id", None),
         "framework_search_step": getattr(node, "step", None),
         "from_topk": bool(getattr(node, "from_topk", False)),
-        "llm_model": MODEL,
-        "reasoning_effort": EFFORT,
+        "llm_model": str(cfg.agent.code.model),
+        "reasoning_effort": str(cfg.agent.code.reasoning_effort),
         "prompt_adapter_version": PROMPT_ADAPTER_VERSION,
         "candidate_worktree_commit": candidate_commit,
     }

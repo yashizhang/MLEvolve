@@ -1,0 +1,222 @@
+{
+  "administrative_errors": [],
+  "allocated_search_gpu_hours": 1.077073674235079,
+  "best_attempt": 1,
+  "best_candidate_id": "55de1e29be1945ec96f79c1f030fc666",
+  "best_judge_valid_candidate_id": null,
+  "best_judge_valid_score": null,
+  "best_raw_online_score": -0.03523989460483358,
+  "candidate_evaluation_wallclock_seconds": 831.8027281546965,
+  "case_id": "s41467-025-65557-7",
+  "configured_effective_budget_seconds": 3600,
+  "effective_seconds_remaining": 3187.6,
+  "effective_solve_seconds_used": 412.4,
+  "ended_at": "2026-08-28T00:32:49.200034Z",
+  "evaluation_batch_name": "nbfc-nbfc-kimi-k3-smoke-mlevolve-s41467-025-65557-7-f24b4ff88383",
+  "evaluation_integrity": {
+    "bridge_result_count": 1,
+    "candidate_evaluation_marker_count": 1,
+    "checks": {
+      "every_official_result_became_a_bridge_result": true,
+      "one_candidate_marker_per_evaluator_call": true,
+      "one_submission_ledger_row_per_evaluator_call": true,
+      "solver_direct_evaluator_access_denied": true,
+      "successful_candidate_relay_calls_match_bridge_results": true,
+      "successful_official_attempts_match_submission_ledger": true
+    },
+    "evaluator_call_count": 1,
+    "failed_evaluator_call_count": 0,
+    "official_attempts": [
+      1
+    ],
+    "official_result_count": 1,
+    "schema": "naturebench.framework-evaluation-integrity",
+    "solver_direct_evaluator_attempt_count": 0,
+    "submission_attempts": [
+      1
+    ],
+    "submission_ledger_count": 1,
+    "successful_candidate_relay_call_count": 1,
+    "successful_evaluator_call_count": 1,
+    "successful_submission_attempts": [
+      1
+    ],
+    "valid": true
+  },
+  "evaluator_paused_seconds": 557.8,
+  "final_evaluation": {
+    "artifact": "/gpfs/projects/AI4D/core-132/yashi/naturebench-lite-framework-comparison-20260825/outputs/naturebench_lite_framework_comparison/preflight/framework-smoke/mlevolve-kimi-k3-smlm/final-evaluation/candidates/final-selected/evaluation/bridge-result.json",
+    "clock": {
+      "consecutive_failures": 0,
+      "elapsed_seconds": 280.1,
+      "is_paused": false,
+      "remaining_seconds": 14119.9,
+      "should_skip": false,
+      "timeout_seconds": 14400,
+      "total_paused_seconds": 556.7
+    },
+    "result": {
+      "artifact_path": "/work/candidates/final-selected/evaluation/naturebench-output",
+      "candidate_id": "final-selected",
+      "candidate_repository_sha256": "a4d9b1d1094841f37df7747a778f0797be9a21a20d3c1ab22b0c8b72dfced0a3",
+      "candidate_root": "/work/candidates/final-selected",
+      "candidate_stderr": "/work/candidates/final-selected/evaluation/candidate.stderr.log",
+      "candidate_stdout": "/work/candidates/final-selected/evaluation/candidate.stdout.log",
+      "case_id": "s41467-025-65557-7",
+      "clock_after": {
+        "budget_seconds": 14400.0,
+        "effective_elapsed_seconds": 280.10000000000036,
+        "evaluator_paused_seconds": 556.7,
+        "expired": false,
+        "fraction_elapsed": 0.019451388888888914,
+        "is_paused": false,
+        "remaining_seconds": 14119.9
+      },
+      "clock_before": {
+        "budget_seconds": 14400.0,
+        "effective_elapsed_seconds": 0.5,
+        "evaluator_paused_seconds": 0.0,
+        "expired": false,
+        "fraction_elapsed": 3.472222222222222e-05,
+        "is_paused": false,
+        "remaining_seconds": 14399.5
+      },
+      "framework": "mlevolve",
+      "gpu_allocation": {
+        "acquired_at_unix": 1787876332.3841004,
+        "candidate_id": "final-selected",
+        "gpu_ids": [
+          "0"
+        ],
+        "hostname": "naturebench-framework",
+        "lease_id": "61c39522093143a889cd87d2d78fcc30",
+        "pid": 2
+      },
+      "lineage": {
+        "adapter_commit": "383737e19dfa41a813598b1150d7fef06c846e66",
+        "case_id": "s41467-025-65557-7",
+        "framework": "mlevolve",
+        "parent_ids": [],
+        "source_commit": "7d8403c899c40f01941c0429f1c4ef51e82ae41c"
+      },
+      "metric_value": -0.03523989460483358,
+      "metrics": {
+        "aggregate_improvement": -0.03523989460483358,
+        "best_aggregate_improvement": -0.03523989460483358
+      },
+      "naturebench": {
+        "attempt": 1,
+        "best_attempt": 1,
+        "per_instance_improvement": {
+          "scenario_5_blinking": -0.0009389830508473618,
+          "scenario_6_blinking": -0.10650454545454552,
+          "scenario_8_blinking": -0.008667857142857121,
+          "scenario_8_no_blinking": -0.02484819277108431
+        },
+        "raw_scores": {
+          "scenario_5_blinking": {
+            "AMI": 0.538731,
+            "ARI": 0.344248,
+            "ARI_c": 0.159632,
+            "ARI_r": 0.589446,
+            "IoU": 0.414317,
+            "JL_c": 0.542295,
+            "RMSE_N": 0.832604
+          },
+          "scenario_6_blinking": {
+            "AMI": 0.630435,
+            "ARI": 0.541394,
+            "ARI_c": 0.512596,
+            "ARI_r": 0.589707,
+            "IoU": 0.455562,
+            "JL_c": 0.374623,
+            "RMSE_N": 0.495406
+          },
+          "scenario_8_blinking": {
+            "AMI": 0.701489,
+            "ARI": 0.530341,
+            "ARI_c": 0.731771,
+            "ARI_r": 0.832719,
+            "IoU": 0.54097,
+            "JL_c": 0.50187,
+            "RMSE_N": 0.300785
+          },
+          "scenario_8_no_blinking": {
+            "AMI": 0.8277,
+            "ARI": 0.799474,
+            "ARI_c": 0.90156,
+            "ARI_r": 0.809376,
+            "IoU": 0.654021,
+            "JL_c": 0.805615,
+            "RMSE_N": 0.272897
+          }
+        }
+      },
+      "resource_usage": {
+        "effective_elapsed_seconds_at_end": 280.10000000000036,
+        "evaluator_paused_seconds_at_end": 556.7,
+        "literal_bridge_wallclock_seconds": 836.487147170119,
+        "wallclock_seconds": 836.1867241030559
+      },
+      "schema": "naturebench.framework-candidate-result",
+      "summary": "Candidate completed and received an official NatureBench score."
+    },
+    "returncode": 0
+  },
+  "final_selected_judge": null,
+  "final_selected_score": -0.03523989460483358,
+  "framework": "mlevolve",
+  "framework_returncode": 0,
+  "judge_attempts": [],
+  "literal_solver_wallclock_seconds": 969.3663068115711,
+  "mode": "smoke",
+  "model": "k3-256k",
+  "neutral_start_commit": "97dce918f9186ad3adb2c8ce74a2337b86cb3c9b",
+  "number_of_evaluations": 1,
+  "reasoning_effort": "low",
+  "run_root": "/gpfs/projects/AI4D/core-132/yashi/naturebench-lite-framework-comparison-20260825/outputs/naturebench_lite_framework_comparison/preflight/framework-smoke/mlevolve-kimi-k3-smlm",
+  "schema": "naturebench.framework-run-summary",
+  "scientific_status": "smoke_scored",
+  "selected_candidate": {
+    "candidate_id": "55de1e29be1945ec96f79c1f030fc666",
+    "repository": "/gpfs/projects/AI4D/core-132/yashi/naturebench-lite-framework-comparison-20260825/outputs/naturebench_lite_framework_comparison/preflight/framework-smoke/mlevolve-kimi-k3-smlm/final/selected/repo",
+    "score": -0.03523989460483358,
+    "selection_source": "mlevolve_best_solution"
+  },
+  "selection_contract": {
+    "case_id": "s41467-025-65557-7",
+    "problem": "/gpfs/projects/AI4D/core-132/yashi/naturebench-lite-runtime-20260821/task-naturebench-lite-pro/public-problems/s41467-025-65557-7/problem",
+    "problem_tree_sha256": "1d0a6c50d36d349cdbd69b8ef918d8ffac25b6d92eb992f60dc5077b1c9d152c",
+    "source_lock_sha256": "3d7014ac08d9a04bef8214f58a7ff3bf4b0ad7c15abfaba89f4b1a718527058d",
+    "valid": true
+  },
+  "selection_error": null,
+  "signal_number": null,
+  "solver_llm_usage": {
+    "cached_input_tokens": 0,
+    "errors": 0,
+    "infrastructure_errors": 0,
+    "input_tokens": 7992,
+    "latency_seconds": 123.499520692043,
+    "model_contract_valid": true,
+    "models": [
+      "k3-256k"
+    ],
+    "output_tokens": 2029,
+    "reasoning_efforts": [
+      "low"
+    ],
+    "request_count": 3,
+    "retry_count": 0,
+    "successful_request_count": 3,
+    "total_tokens": 10021,
+    "unfinished_request_count": 0
+  },
+  "started_at": "2026-08-28T00:02:10.877863Z",
+  "status": "COMPLETE",
+  "termination_reason": "framework_stop",
+  "time_to_best_fraction": 0.11391666666666667,
+  "time_to_best_seconds": 410.1,
+  "timer_started_at": "2026-08-28T00:02:36.715945Z",
+  "valid_materialized_candidate_found": false
+}
