@@ -1,0 +1,117 @@
+{
+  "artifact_path": "/work/candidates/55de1e29be1945ec96f79c1f030fc666/evaluation/naturebench-output",
+  "candidate_id": "55de1e29be1945ec96f79c1f030fc666",
+  "candidate_repository_sha256": "a4d9b1d1094841f37df7747a778f0797be9a21a20d3c1ab22b0c8b72dfced0a3",
+  "candidate_root": "/work/candidates/55de1e29be1945ec96f79c1f030fc666",
+  "candidate_stderr": "/work/candidates/55de1e29be1945ec96f79c1f030fc666/evaluation/candidate.stderr.log",
+  "candidate_stdout": "/work/candidates/55de1e29be1945ec96f79c1f030fc666/evaluation/candidate.stdout.log",
+  "case_id": "s41467-025-65557-7",
+  "clock_after": {
+    "budget_seconds": 3600.0,
+    "effective_elapsed_seconds": 410.1,
+    "evaluator_paused_seconds": 557.8,
+    "expired": false,
+    "fraction_elapsed": 0.11391666666666667,
+    "is_paused": false,
+    "remaining_seconds": 3189.9
+  },
+  "clock_before": {
+    "budget_seconds": 3600.0,
+    "effective_elapsed_seconds": 136.0,
+    "evaluator_paused_seconds": 0.0,
+    "expired": false,
+    "fraction_elapsed": 0.03777777777777778,
+    "is_paused": false,
+    "remaining_seconds": 3464.0
+  },
+  "framework": "mlevolve",
+  "gpu_allocation": {
+    "acquired_at_unix": 1787875492.3263755,
+    "candidate_id": "55de1e29be1945ec96f79c1f030fc666",
+    "gpu_ids": [
+      "0"
+    ],
+    "hostname": "naturebench-framework",
+    "lease_id": "74ded959f23049459388e6c32932da85",
+    "pid": 24
+  },
+  "lineage": {
+    "adapter_commit": "383737e19dfa41a813598b1150d7fef06c846e66",
+    "branch_id": 1,
+    "candidate_worktree_commit": "75d0f275cb3abf13f96fb5cae3d60d5828fe1daf",
+    "case_id": "s41467-025-65557-7",
+    "framework": "mlevolve",
+    "framework_search_step": null,
+    "from_topk": false,
+    "llm_model": "k3-256k",
+    "parent_ids": [
+      "8d30f04f199343ae8570937911d881b8"
+    ],
+    "prompt_adapter_version": "mlevolve-naturebench-v1",
+    "reasoning_effort": "low",
+    "relay_input_repository_sha256": "a4d9b1d1094841f37df7747a778f0797be9a21a20d3c1ab22b0c8b72dfced0a3",
+    "source_commit": "7d8403c899c40f01941c0429f1c4ef51e82ae41c",
+    "stage": "draft"
+  },
+  "metric_value": -0.03523989460483358,
+  "metrics": {
+    "aggregate_improvement": -0.03523989460483358,
+    "best_aggregate_improvement": -0.03523989460483358
+  },
+  "naturebench": {
+    "attempt": 1,
+    "best_attempt": 1,
+    "per_instance_improvement": {
+      "scenario_5_blinking": -0.0009389830508473618,
+      "scenario_6_blinking": -0.10650454545454552,
+      "scenario_8_blinking": -0.008667857142857121,
+      "scenario_8_no_blinking": -0.02484819277108431
+    },
+    "raw_scores": {
+      "scenario_5_blinking": {
+        "AMI": 0.538731,
+        "ARI": 0.344248,
+        "ARI_c": 0.159632,
+        "ARI_r": 0.589446,
+        "IoU": 0.414317,
+        "JL_c": 0.542295,
+        "RMSE_N": 0.832604
+      },
+      "scenario_6_blinking": {
+        "AMI": 0.630435,
+        "ARI": 0.541394,
+        "ARI_c": 0.512596,
+        "ARI_r": 0.589707,
+        "IoU": 0.455562,
+        "JL_c": 0.374623,
+        "RMSE_N": 0.495406
+      },
+      "scenario_8_blinking": {
+        "AMI": 0.701489,
+        "ARI": 0.530341,
+        "ARI_c": 0.731771,
+        "ARI_r": 0.832719,
+        "IoU": 0.54097,
+        "JL_c": 0.50187,
+        "RMSE_N": 0.300785
+      },
+      "scenario_8_no_blinking": {
+        "AMI": 0.8277,
+        "ARI": 0.799474,
+        "ARI_c": 0.90156,
+        "ARI_r": 0.809376,
+        "IoU": 0.654021,
+        "JL_c": 0.805615,
+        "RMSE_N": 0.272897
+      }
+    }
+  },
+  "resource_usage": {
+    "effective_elapsed_seconds_at_end": 410.1,
+    "evaluator_paused_seconds_at_end": 557.8,
+    "literal_bridge_wallclock_seconds": 832.0507869413123,
+    "wallclock_seconds": 831.8027281546965
+  },
+  "schema": "naturebench.framework-candidate-result",
+  "summary": "Candidate completed and received an official NatureBench score."
+}

@@ -175,10 +175,15 @@ class NatureBenchAdapterTests(unittest.TestCase):
                 cwd=starter,
                 check=True,
             )
+            stage = SimpleNamespace(model=MODEL, reasoning_effort=EFFORT)
             cfg = SimpleNamespace(
                 task_mode="naturebench",
                 workspace_dir=str(tmp / "workspace"),
-                agent=SimpleNamespace(search=SimpleNamespace(num_gpus=1)),
+                agent=SimpleNamespace(
+                    code=stage,
+                    feedback=stage,
+                    search=SimpleNamespace(num_gpus=1),
+                ),
                 exec=SimpleNamespace(timeout=300),
             )
             node = SimpleNamespace(

@@ -1,0 +1,17 @@
+{
+  "case_id": "s41467-025-65557-7",
+  "guidance_prefix": "## Scientific cold-start prior",
+  "prior_tier": "general",
+  "recipe_override": "",
+  "resolver": "semantic",
+  "schema": "naturebench.kimi-k3-route-provenance",
+  "selected_recipe_confidence": "low",
+  "selected_recipe_evidence": [
+    "single-molecule localization",
+    "point-cloud input",
+    "spatial clustering"
+  ],
+  "selected_recipe_id": "smlm_point_cloud_clustering",
+  "selected_recipe_margin": 15.0,
+  "selected_recipe_score": 15.0
+}

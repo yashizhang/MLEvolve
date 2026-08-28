@@ -1,0 +1,63 @@
+# NatureBench Kimi K3-256K one-step smoke profile.
+# Merge on top of MLEvolve's normal config via MLEVOLVE_CONFIG (same mechanism
+# as config/naturebench.yaml). This profile is additive: it does not change the
+# default Luna/xhigh comparison profile in config/naturebench.yaml.
+#
+# Credentials are read from the environment at load time; never commit secrets.
+# Inside the scored/smoke harness sandbox there is no network: launch with a
+# generated merged profile whose api_key is the relay placeholder and with
+# NATUREBENCH_KIMI_SOCKET pointing at the host-held Kimi relay.
+task_mode: naturebench
+evaluation_backend: naturebench_bridge
+data_dir: ${oc.env:NATUREBENCH_PUBLIC_PROBLEM}
+desc_file: ${oc.env:NATUREBENCH_PUBLIC_PROBLEM}/README.md
+log_dir: ${oc.env:NATUREBENCH_MLEVOLVE_RUN_ROOT}/framework
+workspace_dir: ${oc.env:NATUREBENCH_MLEVOLVE_RUN_ROOT}/framework
+preprocess_data: false
+copy_data: false
+start_cpu_id: 0
+cpu_number: 21
+
+exec:
+  timeout: 1200
+  agent_file_name: runfile.py
+
+agent:
+  steps: 1
+  time_limit: 2400
+  initial_drafts: 1
+  seed: 42
+  data_preview: true
+  code:
+    model: k3-256k
+    temp: null
+    base_url: ${oc.env:KIMI_BASE_URL,https://api.kimi.com/coding/v1}
+    api_key: ${oc.env:KIMI_API_KEY}
+    reasoning_effort: low
+  feedback:
+    model: k3-256k
+    temp: null
+    base_url: ${oc.env:KIMI_BASE_URL,https://api.kimi.com/coding/v1}
+    api_key: ${oc.env:KIMI_API_KEY}
+    reasoning_effort: low
+  check_data_leakage: false
+  use_diff_mode: false
+  use_stepwise_generation: false
+  use_evolution: false
+  use_fusion: false
+  use_aggregation: false
+  use_global_memory: false
+  search:
+    parallel_search_num: 1
+    num_gpus: 1
+    num_drafts: 1
+
+coldstart:
+  use_coldstart: true
+  resolver: semantic
+  recipe_json_path: engine/coldstart/naturebench_recipes.json
+  asset_manifest_path: engine/coldstart/naturebench_assets.json
+  prior_tier: general
+  recipe_override: ""
+  strict_assets: false
+  max_inventory_files: 256

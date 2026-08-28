@@ -1,0 +1,19 @@
+## baseline commands (phase 1)
+$ PYTHONPATH=<common>/src .venv/bin/python -m compileall -q engine/coldstart llm scripts tests naturebench_adapter.py run.py
+COMPILEALL_OK
+$ PYTHONPATH=<common>/src .venv/bin/python -m pytest -q tests/test_naturebench_coldstart.py tests/test_naturebench_adapter.py
+25 passed in 4.48s
+
+## phase 2/3 (implementation + regression)
+$ .venv/bin/python -m compileall -q engine/coldstart llm scripts tests naturebench_adapter.py run.py   # COMPILE_OK
+$ PYTHONPATH=<common>/src .venv/bin/python -m pytest -q tests/                                          # 43 passed
+$ (common) PYTHONPATH=src .venv/bin/python -m pytest -q tests/                                          # 53 passed
+$ git diff --check (both repos)                                                                          # clean
+
+## phase 4 (live probes, host-side direct Kimi endpoint via MLEvolve backend)
+$ NATUREBENCH_COMMON_SRC=<common>/src .venv/bin/python reports/naturebench_kimi_k3_smoke/probe_driver.py
+{"probe_a_ok": true, "probe_b_ok": true}
+# relay-path integration check (MLEvolve backend -> httpx UDS -> KimiRelay -> api.kimi.com): "RELAY OK", audit status 200
+
+## phase 5 (live one-step SMLM smoke through the canonical bridge worker)
+$ bash reports/naturebench_kimi_k3_smoke/launch_smoke.sh   # worker exit 0, status COMPLETE

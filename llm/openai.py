@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import re
 import time
 from typing import Any
@@ -9,7 +10,12 @@ from typing import Any
 from openai import OpenAI
 
 from config import Config
-from naturebench_adapter import adapt_prompt, is_naturebench
+from naturebench_adapter import (
+    adapt_prompt,
+    is_naturebench,
+    llm_timeout_seconds,
+    provider_for_model,
+)
 from .gemini import FunctionSpec, compile_prompt_to_md
 from .model_profiles import get_profile, supports_json_schema, thinking_json_incompatible, supports_tool_choice_required, get_thinking_extra_body
 
@@ -78,6 +84,36 @@ def _stage_config_for_model(cfg: Config, model: str):
     return cfg.agent.feedback
 
 
+def _openai_client(stage: Any, cfg: Config) -> OpenAI:
+    """Build the OpenAI-compatible client for a stage.
+
+    In NatureBench mode the solver sandbox has no network, so Kimi requests go
+    to the host-held relay through its mounted Unix socket. Outside NatureBench
+    mode (or when no relay socket is configured) the configured base_url and
+    api_key are used directly.
+    """
+    timeout = llm_timeout_seconds(cfg, 1200.0)
+    if is_naturebench(cfg):
+        socket_path = os.environ.get("NATUREBENCH_KIMI_SOCKET", "").strip()
+        if socket_path:
+            import httpx
+
+            return OpenAI(
+                api_key=str(getattr(stage, "api_key", "") or "naturebench-kimi-relay"),
+                base_url="http://kimi-relay.internal/v1",
+                timeout=timeout,
+                http_client=httpx.Client(
+                    transport=httpx.HTTPTransport(uds=socket_path),
+                    timeout=timeout,
+                ),
+            )
+    return OpenAI(
+        api_key=stage.api_key,
+        base_url=stage.base_url or None,
+        timeout=timeout,
+    )
+
+
 def _build_messages(system_message: str | None, user_message: str | None, model: str = "") -> list[dict[str, str]]:
     # Anthropic API (Claude) requires the messages array to contain at least
     # one user-role message; system is a separate top-level field. When only
@@ -106,24 +142,29 @@ def query(
     """OpenAI-compatible query (chat completions, optional function calling). Same return shape as gemini.query."""
     if cfg is None:
         raise ValueError("cfg is required for OpenAI backend")
-    if is_naturebench(cfg):
-        from . import luna_responses
-
-        return luna_responses.query(
-            system_message=adapt_prompt(system_message or "", cfg) if system_message else None,
-            user_message=adapt_prompt(user_message or "", cfg) if user_message else None,
-            func_spec=func_spec,
-            cfg=cfg,
-            max_tokens=int(model_kwargs.get("max_tokens") or 16384),
-        )
     filtered = {k: v for k, v in model_kwargs.items() if v is not None}
     model = filtered.get("model", "")
+    naturebench = is_naturebench(cfg)
+    if naturebench:
+        provider = provider_for_model(model or str(cfg.agent.feedback.model))
+        if provider == "host-unix-responses-relay":
+            from . import luna_responses
+
+            return luna_responses.query(
+                system_message=adapt_prompt(system_message or "", cfg) if system_message else None,
+                user_message=adapt_prompt(user_message or "", cfg) if user_message else None,
+                func_spec=func_spec,
+                cfg=cfg,
+                max_tokens=int(model_kwargs.get("max_tokens") or 16384),
+            )
+        # Kimi OpenAI-compatible provider: the NatureBench prompt adaptation
+        # and execution contract are applied before the request is sent.
+        if system_message:
+            system_message = adapt_prompt(system_message, cfg)
+        if user_message:
+            user_message = adapt_prompt(user_message, cfg)
     stage = _stage_config_for_model(cfg, model)
-    client = OpenAI(
-        api_key=stage.api_key,
-        base_url=stage.base_url or None,
-        timeout=1200.0,
-    )
+    client = _openai_client(stage, cfg)
     messages = _build_messages(system_message, user_message, model=model)
     if not messages:
         raise ValueError("Either system_message or user_message must be provided")
@@ -144,6 +185,10 @@ def query(
     # Merge model-specific thinking params (synced from agentic-mle)
     if use_thinking:
         extra_body.update(get_thinking_extra_body(model))
+    if naturebench:
+        # The configured profile's reasoning effort travels with every request
+        # type, including tool/function-call requests.
+        extra_body["reasoning_effort"] = str(stage.reasoning_effort)
 
     params: dict[str, Any] = {
         "model": model,
@@ -251,9 +296,11 @@ def generate(
     stage = cfg.agent.code
     model = stage.model
     messages = _prompt_to_messages(prompt, model=model)
-    if is_naturebench(cfg):
-        from . import luna_responses
-
+    naturebench = is_naturebench(cfg)
+    if naturebench:
+        provider = provider_for_model(model)
+        # The NatureBench prompt adaptation and execution contract apply to
+        # every provider; the contract is attached to the first message.
         adapted_messages = [
             {
                 **message,
@@ -265,17 +312,17 @@ def generate(
             }
             for index, message in enumerate(messages)
         ]
-        return luna_responses.generate(
-            prompt_messages=adapted_messages,
-            cfg=cfg,
-            json_schema=json_schema,
-            max_tokens=int(max_tokens or 16384),
-        )
-    client = OpenAI(
-        api_key=stage.api_key,
-        base_url=stage.base_url or None,
-        timeout=1200.0,
-    )
+        if provider == "host-unix-responses-relay":
+            from . import luna_responses
+
+            return luna_responses.generate(
+                prompt_messages=adapted_messages,
+                cfg=cfg,
+                json_schema=json_schema,
+                max_tokens=int(max_tokens or 16384),
+            )
+        messages = adapted_messages
+    client = _openai_client(stage, cfg)
     # Qwen: thinking + json_schema are mutually exclusive — drop schema, keep thinking.
     if json_schema is not None and thinking_json_incompatible(model):
         json_schema = None
@@ -293,6 +340,10 @@ def generate(
     # Merge model-specific thinking params (synced from agentic-mle)
     if use_thinking:
         extra_body.update(get_thinking_extra_body(model))
+    if naturebench:
+        # The configured profile's reasoning effort travels with every request
+        # type, including streamed generation and structured-output requests.
+        extra_body["reasoning_effort"] = str(stage.reasoning_effort)
 
     params: dict[str, Any] = {
         "model": model,

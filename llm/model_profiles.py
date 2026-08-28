@@ -42,9 +42,19 @@ _PROFILES: dict[str, dict] = {
         },
     },
 
-    # ── Kimi series (K2.5, K2.6) ───
+    # ── Kimi series (K2.5, K2.6, K3) ───
     # Kimi reasoning models only allow temperature=1
     "kimi": {
+        "thinking": {
+            "temperature": 1.0, "top_p": 0.95,
+        },
+        "non_thinking": {
+            "temperature": 1.0, "top_p": 0.95,
+        },
+    },
+
+    # Kimi K3 API model IDs ("k3", "k3-256k") share the Kimi parameter profile.
+    "k3": {
         "thinking": {
             "temperature": 1.0, "top_p": 0.95,
         },
@@ -87,6 +97,7 @@ _PROFILES: dict[str, dict] = {
 _THINKING_EXTRA_BODY: dict[str, dict] = {
     "qwen":     {"enable_thinking": True},
     "kimi":     {},                          # Kimi enables thinking by default
+    "k3":       {},                          # K3 shares the Kimi thinking defaults
     "deepseek": {"thinking": {"type": "enabled"}, "reasoning_effort": "high"},
     "gpt":      {},
     # Claude Opus 4.6/4.7 + Sonnet 4.6: adaptive thinking is the recommended
@@ -105,7 +116,13 @@ _THINKING_JSON_INCOMPATIBLE = ("qwen",)
 # Models that don't support tool_choice="required" / specific function targeting.
 # Claude with extended thinking only supports tool_choice="auto" or "none";
 # specific tool name will return a 400 error.
-_NO_TOOL_CHOICE_REQUIRED_PREFIXES = ("kimi", "deepseek", "claude")
+_NO_TOOL_CHOICE_REQUIRED_PREFIXES = ("kimi", "k3", "deepseek", "claude")
+
+
+def is_kimi_family(model_name: str) -> bool:
+    """Return True for Kimi-family model IDs, including the K3 API ids (k3, k3-256k)."""
+    name = (model_name or "").lower()
+    return name.startswith("kimi") or name == "k3" or name.startswith("k3-")
 
 
 def thinking_json_incompatible(model_name: str) -> bool:

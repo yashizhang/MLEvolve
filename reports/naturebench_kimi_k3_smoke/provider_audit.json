@@ -1,0 +1,25 @@
+{
+  "automatic_fallback": false,
+  "model_allowlist": [
+    "k3-256k"
+  ],
+  "prompt_adapter_version": "mlevolve-naturebench-v1",
+  "provider": "kimi-openai-compatible",
+  "reasoning_effort_allowlist": [
+    "low"
+  ],
+  "roles": {
+    "code": {
+      "model": "k3-256k",
+      "reasoning_effort": "low"
+    },
+    "feedback": {
+      "model": "k3-256k",
+      "reasoning_effort": "low"
+    }
+  },
+  "schema": "naturebench.mlevolve-provider-audit",
+  "task_mode": "naturebench",
+  "validated": true,
+  "web_search": false
+}

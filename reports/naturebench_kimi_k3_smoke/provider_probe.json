@@ -1,0 +1,119 @@
+{
+  "probe_a": {
+    "latency_seconds": 1.447139141149819,
+    "ok": true,
+    "request": {
+      "extra_body": {
+        "reasoning_effort": "low"
+      },
+      "max_tokens": 2048,
+      "messages": [
+        {
+          "content_chars": 843,
+          "role": "user"
+        }
+      ],
+      "model": "k3-256k",
+      "stream": true,
+      "temperature": 1.0,
+      "top_p": 0.95
+    },
+    "response": {
+      "chunk_count": 35,
+      "model": "k3-256k",
+      "usage": null
+    },
+    "response_excerpt": "SMOKE OK",
+    "response_nonempty": true
+  },
+  "probe_b": {
+    "info": {
+      "created": 1787875176,
+      "model": "k3-256k"
+    },
+    "latency_seconds": 6.4341866578906775,
+    "ok": true,
+    "parsed_output": {
+      "metric_value": 0.25
+    },
+    "request": {
+      "extra_body": {
+        "reasoning_effort": "low"
+      },
+      "max_tokens": 16384,
+      "messages": [
+        {
+          "content_chars": 866,
+          "role": "system"
+        },
+        {
+          "content_chars": 839,
+          "role": "user"
+        }
+      ],
+      "model": "k3-256k",
+      "temperature": 1.0,
+      "tools": [
+        {
+          "name": "submit_metric",
+          "type": "function"
+        }
+      ],
+      "top_p": 0.95
+    },
+    "response": {
+      "finish_reason": "tool_calls",
+      "model": "k3-256k",
+      "usage": {
+        "cached_tokens": 519,
+        "completion_tokens": 64,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 12,
+          "rejected_prediction_tokens": null,
+          "text_tokens": null
+        },
+        "prompt_tokens": 519,
+        "prompt_tokens_details": {
+          "audio_tokens": null,
+          "cache_write_tokens": null,
+          "cached_tokens": 519,
+          "image_tokens": null,
+          "text_tokens": null
+        },
+        "total_tokens": 583
+      }
+    },
+    "tokens": {
+      "input": 519,
+      "output": 64
+    }
+  },
+  "schema": "naturebench.kimi-k3-provider-probe",
+  "startup_audit": {
+    "automatic_fallback": false,
+    "model_allowlist": [
+      "k3-256k"
+    ],
+    "prompt_adapter_version": "mlevolve-naturebench-v1",
+    "provider": "kimi-openai-compatible",
+    "reasoning_effort_allowlist": [
+      "low"
+    ],
+    "roles": {
+      "code": {
+        "model": "k3-256k",
+        "reasoning_effort": "low"
+      },
+      "feedback": {
+        "model": "k3-256k",
+        "reasoning_effort": "low"
+      }
+    },
+    "schema": "naturebench.mlevolve-provider-audit",
+    "task_mode": "naturebench",
+    "validated": true,
+    "web_search": false
+  }
+}
